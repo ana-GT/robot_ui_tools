@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+
+
+  <!-- We do not have a robot connected, so publish fake joint states -->
+  <node name="fake_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="/use_gui" value="false"/>
+    <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
+  </node>
+
+
+  <include file="$(find fetch_moveit_config)/launch/move_group.launch">
+    <!--<arg name="load_robot_description" value="false"/>-->
+    <arg name="fake_execution" value="true"/>
+  </include>
+  
+    
+  
+</launch>

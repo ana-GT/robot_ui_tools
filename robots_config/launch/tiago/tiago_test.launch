@@ -9,20 +9,21 @@
   <arg name="laser_model"  default="sick-571"/>
   <arg name="camera_model"  default="orbbec-astra"/>
   <arg name="base_type"  default="pmb2"/>
-  <!-- Args are the ones that upload.launch requires-->
-  <include file="$(find tiago_description)/robots/upload.launch">
-    <arg name="arm"  value="$(arg arm)"/>
-    <arg name="end_effector"  value="$(arg end_effector)"/>
-    <arg name="ft_sensor"  value="$(arg ft_sensor)"/>
-    <arg name="laser_model"  value="$(arg laser_model)"/>
-    <arg name="camera_model"  value="$(arg camera_model)"/>
-    <arg name="base_type"  value="$(arg base_type)"/>
-  </include>
-
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
   
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <!-- Urdf, robot_publisher, joint_state_publisher -->
+  <include file="$(find robots_config)/launch/tiago/tiago_config.launch">
+    <arg name="arm"           value="$(arg arm)"/>
+    <arg name="end_effector"  value="$(arg end_effector)"/>
+    <arg name="ft_sensor"     value="$(arg ft_sensor)"/>
+    <arg name="laser_model"   value="$(arg laser_model)"/>
+    <arg name="camera_model"  value="$(arg camera_model)"/>
+    <arg name="base_type"     value="$(arg base_type)"/>
+    <arg name="rviz"          value="false"/>  
+  </include>  
 
+
+  <!-- Moveit stuff -->
+  <include file="$(find robots_config)/launch/tiago/tiago_moveit.launch"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robots_config)/rviz/tiago.rviz" output="screen" if="$(arg rviz)"/>
   

@@ -492,6 +492,15 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: JoseMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /jose_markers/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

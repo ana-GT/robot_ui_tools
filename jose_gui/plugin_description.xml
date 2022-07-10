@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<class_libraries>
+  <library path="lib/libjose_gui">
+    <class name="jose/JoseGui" type="jose::JoseGui" base_class_type="rviz::Panel">
+      <description>
+      An RViz panel for sandbox
+    </description>
+    </class>
+  </library>
+</class_libraries>

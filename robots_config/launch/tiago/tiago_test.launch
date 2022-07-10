@@ -25,6 +25,10 @@
   <!-- Moveit stuff -->
   <include file="$(find robots_config)/launch/tiago/tiago_moveit.launch"/>
 
+  <!-- srdf with chain explicit in srdf -->
+  <param name="robot_description_semantic" textfile="$(find robots_config)/config/tiago/tiago_pal-hey5.srdf" />
+
+  
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robots_config)/rviz/tiago.rviz" output="screen" if="$(arg rviz)"/>
   
 </launch>

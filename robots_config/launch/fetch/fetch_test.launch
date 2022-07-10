@@ -12,6 +12,9 @@
   <!-- Moveit stuff -->
   <include file="$(find robots_config)/launch/fetch/fetch_moveit.launch"/>
 
+  <!-- srdf with chain explicit in srdf -->
+  <param name="robot_description_semantic" textfile="$(find robots_config)/config/fetch/fetch.srdf" />
+  
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robots_config)/rviz/fetch.rviz" output="screen" if="$(arg rviz)"/>
   
 </launch>

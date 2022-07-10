@@ -11,16 +11,18 @@ def generate_launch_description():
         'tiago_description', ['launch', 'robot_state_publisher.launch.py'])
 
     start_joint_pub_gui = Node(
-        package='joint_state_publisher_gui',
-        executable='joint_state_publisher_gui',
-        name='joint_state_publisher_gui',
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        name='joint_state_publisher',
         output='screen')
 
+    rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
+    rviz_full_config = os.path.join(rviz_base, "tiago.rviz")
     start_rviz_cmd = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-#        arguments=['-d', rviz_config_file],
+        arguments=['-d', rviz_full_config],
         output='screen')
 
     return LaunchDescription([
@@ -28,3 +30,6 @@ def generate_launch_description():
         start_joint_pub_gui,
         start_rviz_cmd
     ])
+    
+    
+    

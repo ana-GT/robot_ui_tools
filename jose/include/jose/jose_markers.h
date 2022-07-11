@@ -1,12 +1,15 @@
 #pragma once
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <interactive_markers/interactive_marker_server.h>
-#include <interactive_markers/menu_handler.h>
-
-#include <tf/transform_broadcaster.h>
-#include <tf/tf.h>
+#include <interactive_markers/interactive_marker_server.hpp>
+#include <interactive_markers/menu_handler.hpp>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <jose/jose.h>
 
@@ -18,43 +21,44 @@
 class JoseMarkers
 {
 public:
-  JoseMarkers(ros::NodeHandle _nh);
+  JoseMarkers(rclcpp::Node::SharedPtr _nh);
   void init(std::string _group);
   void stop();
   
-  visualization_msgs::Marker makeBox( visualization_msgs::InteractiveMarker &msg );
-  visualization_msgs::InteractiveMarkerControl& makeBoxControl( visualization_msgs::InteractiveMarker &msg );
-  void frameCallback(const ros::TimerEvent&);
-  void processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
-  void alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  visualization_msgs::msg::Marker makeBox( visualization_msgs::msg::InteractiveMarker &msg );
+  visualization_msgs::msg::InteractiveMarkerControl& makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg );
+ 
+  void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
+  void alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
   void make6DofMarker( bool fixed, unsigned int interaction_mode,
-		       const tf::Vector3& position, bool show_6dof,
+		       const tf2::Vector3& position, bool show_6dof,
 		       std::string frame_id); // base_link
 
-  void makeMenuMarker( const tf::Vector3& position,
+  void makeMenuMarker( const tf2::Vector3& position,
 		       std::string frame_id);
-  void makeButtonMarker( const tf::Vector3& position,
+  void makeButtonMarker( const tf2::Vector3& position,
 			 std::string frame_id);
-  void makeMovingMarker( const tf::Vector3& position,
+  void makeMovingMarker( const tf2::Vector3& position,
 			 std::string frame_id); // moving_frame
   
   double rand( double min, double max );
-  void saveMarker( visualization_msgs::InteractiveMarker int_marker );
+  void saveMarker( visualization_msgs::msg::InteractiveMarker int_marker );
 
   
 protected:
-  ros::NodeHandle nh_;
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+  rclcpp::Node::SharedPtr nh_;
+  std::unique_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
-  ros::Timer frame_timer_;
-  tf::TransformBroadcaster br_;
+  rclcpp::TimerBase::SharedPtr frame_timer_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   Jose jose_;
-  geometry_msgs::PoseStamped goal_pose_;
+  geometry_msgs::msg::PoseStamped goal_pose_;
 
 
   // Sim joint_states
   std::string js_topic_;
-  ros::Publisher js_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr js_pub_;
+
 };
 
 

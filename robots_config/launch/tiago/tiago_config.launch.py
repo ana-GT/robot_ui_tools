@@ -11,10 +11,16 @@ def generate_launch_description():
     robot_state_publisher = include_launch_py_description(
         'tiago_description', ['launch', 'robot_state_publisher.launch.py'])
 
-    start_joint_pub_gui = Node(
+    sources_list = {
+        "source_list": ["/move_group/fake_controller_joint_states"]
+    }
+    
+    
+    joint_pub = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
+        parameters=[sources_list],
         output='screen')
 
     rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
@@ -28,7 +34,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         robot_state_publisher,
-        start_joint_pub_gui,
+        joint_pub,
         start_rviz_cmd
     ])
     

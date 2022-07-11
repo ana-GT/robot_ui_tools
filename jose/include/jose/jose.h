@@ -1,4 +1,4 @@
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <srdfdom/model.h>
 #include <urdf_parser/urdf_parser.h>
 #include <urdf/model.h>
@@ -6,7 +6,7 @@
 
 #include <trac_ik/trac_ik.hpp>
 #include <Eigen/Geometry>
-#include <sensor_msgs/JointState.h>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 /**
  * @class Jose
@@ -15,7 +15,8 @@ class Jose {
 
 public:
   Jose();
-  void init(std::string _group);
+  void init(rclcpp::Node::SharedPtr _nh,
+	    std::string _group);
 
   bool getIK(Eigen::Vector3d _pos,
 	     Eigen::Quaterniond _rot,
@@ -31,13 +32,13 @@ public:
   std::string getTipLink() { return group_tip_link_; }
 
   bool getMsg(const std::vector<double> &_joints,
-	      sensor_msgs::JointState &_msg);
+	      sensor_msgs::msg::JointState &_msg);
   void getJointNames();
   
 protected:
   
   std::shared_ptr<TRAC_IK::TRAC_IK> trac_ik_;
-  ros::NodeHandle nh_;
+  rclcpp::Node::SharedPtr nh_;
   std::string group_;
   std::vector<std::string> joints_;
   int num_joints_;

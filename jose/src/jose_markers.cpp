@@ -4,13 +4,22 @@
 
 #include <jose/jose_markers.h>
 
+using std::placeholders::_1;
+
 /**
  * @function JoseMarkers
  * @brief Constructor
  */
-JoseMarkers::JoseMarkers(ros::NodeHandle _nh)
+JoseMarkers::JoseMarkers(rclcpp::Node::SharedPtr _nh) :
+  nh_(_nh)
 {
-  nh_ = _nh;
+  server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/jose_markers",
+									   nh_->get_node_base_interface(),
+									   nh_->get_node_clock_interface(),
+									   nh_->get_node_logging_interface(),
+									   nh_->get_node_topics_interface(),
+									   nh_->get_node_services_interface());
+
 }
 
 void JoseMarkers::stop()
@@ -21,28 +30,25 @@ void JoseMarkers::stop()
 void JoseMarkers::init(std::string _group)
 {
   // Init jose kinematics
-  jose_.init(_group);
+  jose_.init(nh_, _group);
   
-  frame_timer_ = nh_.createTimer(ros::Duration(0.01), &JoseMarkers::frameCallback, this);
 
-  server_.reset( new interactive_markers::InteractiveMarkerServer("/jose_markers","",false) );
+  //ros::Duration(0.1).sleep();
 
-  ros::Duration(0.1).sleep();
-
-  menu_handler_.insert( "Get IK", boost::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( "Get IK", std::bind(&JoseMarkers::processFeedback, this, _1));
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
-  menu_handler_.insert( sub_menu_handle, "First Entry", boost::bind(&JoseMarkers::processFeedback, this, _1));
-  menu_handler_.insert( sub_menu_handle, "Second Entry", boost::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
 
-  tf::Vector3 position;
+  tf2::Vector3 position;
   std::string frame_id = jose_.getBaseLink();
   
-  position = tf::Vector3( 0, 0, 0);
-  make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D,
+  position = tf2::Vector3( 0, 0, 0);
+  make6DofMarker( false, visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D,
 		  position, true, frame_id );
 
   js_topic_ = "/move_group/fake_controller_joint_states";
-  js_pub_ = nh_.advertise<sensor_msgs::JointState>(js_topic_, 10);
+  js_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>(js_topic_, 10);
 
   server_->applyChanges();
 
@@ -51,11 +57,11 @@ void JoseMarkers::init(std::string _group)
 /**
  * @function makeBox
  */
-visualization_msgs::Marker JoseMarkers::makeBox( visualization_msgs::InteractiveMarker &msg )
+visualization_msgs::msg::Marker JoseMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
 {
-  visualization_msgs::Marker marker;
+  visualization_msgs::msg::Marker marker;
 
-  marker.type = visualization_msgs::Marker::CUBE;
+  marker.type = visualization_msgs::msg::Marker::CUBE;
   marker.scale.x = 0.05; //msg.scale * 0.4;
   marker.scale.y = 0.05; //msg.scale * 0.4;
   marker.scale.z = 0.05; //msg.scale * 0.4;
@@ -70,9 +76,9 @@ visualization_msgs::Marker JoseMarkers::makeBox( visualization_msgs::Interactive
 /**
  * @functino makeBoxControl
  */
-visualization_msgs::InteractiveMarkerControl& JoseMarkers::makeBoxControl( visualization_msgs::InteractiveMarker &msg )
+visualization_msgs::msg::InteractiveMarkerControl& JoseMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
 {
-  visualization_msgs::InteractiveMarkerControl control;
+  visualization_msgs::msg::InteractiveMarkerControl control;
   control.always_visible = true;
   control.markers.push_back( this->makeBox(msg) );
   msg.controls.push_back( control );
@@ -80,30 +86,9 @@ visualization_msgs::InteractiveMarkerControl& JoseMarkers::makeBoxControl( visua
   return msg.controls.back();
 }
 
-/**
- * @function frameCallback
- */
-void JoseMarkers::frameCallback(const ros::TimerEvent&)
-{
-  static uint32_t counter = 0;
-
-  tf::Transform t;
-  ros::Time time = ros::Time::now();
-
-  t.setOrigin(tf::Vector3(0.0, 0.0, sin(float(counter)/140.0) * 2.0));
-  t.setRotation(tf::Quaternion(0.0, 0.0, 0.0, 1.0));
-  br_.sendTransform(tf::StampedTransform(t, time, "base_link", "moving_frame"));
-
-  t.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
-  t.setRotation(tf::createQuaternionFromRPY(0.0, float(counter)/140.0, 0.0));
-  br_.sendTransform(tf::StampedTransform(t, time, "base_link", "rotating_frame"));
-
-  counter++;
-}
-
 
 // %Tag(processFeedback)%
-void JoseMarkers::processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+void JoseMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   std::ostringstream s;
   s << "Feedback from marker '" << feedback->marker_name << "' "
@@ -120,9 +105,9 @@ void JoseMarkers::processFeedback( const visualization_msgs::InteractiveMarkerFe
 
   switch ( feedback->event_type )
   {
-    case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
+  case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
-      ROS_INFO_STREAM( s.str() << ": menu item " << feedback->menu_entry_id << " clicked" << mouse_point_ss.str() << "." );
+      RCLCPP_INFO_STREAM( nh_->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked" << mouse_point_ss.str() << "." );
       // Get IK
       KDL::Twist bounds = KDL::Twist::Zero();
       Eigen::Vector3d pos;
@@ -143,16 +128,16 @@ void JoseMarkers::processFeedback( const visualization_msgs::InteractiveMarkerFe
 	printf("--** \n");
 
 	// Publish
-	sensor_msgs::JointState msg;
+	sensor_msgs::msg::JointState msg;
 	if(jose_.getMsg(joints, msg))
-	  js_pub_.publish(msg);
+	  js_pub_->publish(msg);
       }
       else
 	printf("Didn't found a solution! Aw \n");
     }
     break;
 
-    case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+  case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
     {
       goal_pose_.pose = feedback->pose;
       goal_pose_.header = feedback->header;
@@ -167,14 +152,14 @@ void JoseMarkers::processFeedback( const visualization_msgs::InteractiveMarkerFe
 /**
  * @function alignMarker
  */
-void JoseMarkers::alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+void JoseMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
-  geometry_msgs::Pose pose = feedback->pose;
+  geometry_msgs::msg::Pose pose = feedback->pose;
 
   pose.position.x = round(pose.position.x-0.5)+0.5;
   pose.position.y = round(pose.position.y-0.5)+0.5;
 
-  ROS_INFO_STREAM( feedback->marker_name << ":"
+  RCLCPP_INFO_STREAM( nh_->get_logger(), feedback->marker_name << ":"
       << " aligning position = "
       << feedback->pose.position.x
       << ", " << feedback->pose.position.y
@@ -192,12 +177,14 @@ void JoseMarkers::alignMarker( const visualization_msgs::InteractiveMarkerFeedba
  * @function make6DofMarkers
  */
 void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
-				  const tf::Vector3& position, bool show_6dof,
+				  const tf2::Vector3& position, bool show_6dof,
 				  std::string frame_id)
 {
-  visualization_msgs::InteractiveMarker int_marker;
+  visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = frame_id;
-  tf::pointTFToMsg(position, int_marker.pose.position);
+  int_marker.pose.position.x = position.getX();
+  int_marker.pose.position.y = position.getY();
+  int_marker.pose.position.z = position.getZ();  
   int_marker.scale = 0.4;
 
   int_marker.name = "goal";
@@ -207,21 +194,21 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
   makeBoxControl(int_marker);
   int_marker.controls[0].interaction_mode = interaction_mode;
 
-  visualization_msgs::InteractiveMarkerControl control;
+  visualization_msgs::msg::InteractiveMarkerControl control;
 
   if ( fixed )
   {
     int_marker.name += "_fixed";
     int_marker.description += "\n(fixed orientation)";
-    control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+    control.orientation_mode = visualization_msgs::msg::InteractiveMarkerControl::FIXED;
   }
 
-  if (interaction_mode != visualization_msgs::InteractiveMarkerControl::NONE)
+  if (interaction_mode != visualization_msgs::msg::InteractiveMarkerControl::NONE)
   {
       std::string mode_text;
-      if( interaction_mode == visualization_msgs::InteractiveMarkerControl::MOVE_3D )         mode_text = "MOVE_3D";
-      if( interaction_mode == visualization_msgs::InteractiveMarkerControl::ROTATE_3D )       mode_text = "ROTATE_3D";
-      if( interaction_mode == visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D )  mode_text = "MOVE_ROTATE_3D";
+      if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::MOVE_3D )         mode_text = "MOVE_3D";
+      if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::ROTATE_3D )       mode_text = "ROTATE_3D";
+      if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D )  mode_text = "MOVE_ROTATE_3D";
       int_marker.name += "_" + mode_text;
       int_marker.description = std::string("3D Control") + (show_6dof ? " + 6-DOF controls" : "") + "\n" + mode_text;
   }
@@ -233,10 +220,10 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
     control.orientation.y = 0;
     control.orientation.z = 0;
     control.name = "rotate_x";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
     int_marker.controls.push_back(control);
     control.name = "move_x";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
 
     control.orientation.w = 1;
@@ -244,10 +231,10 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
     control.orientation.y = 1;
     control.orientation.z = 0;
     control.name = "rotate_z";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
     int_marker.controls.push_back(control);
     control.name = "move_z";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
 
     control.orientation.w = 1;
@@ -255,16 +242,16 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
     control.orientation.y = 0;
     control.orientation.z = 1;
     control.name = "rotate_y";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
     int_marker.controls.push_back(control);
     control.name = "move_y";
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
   }
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, boost::bind(&JoseMarkers::processFeedback, this, _1));
-  if (interaction_mode != visualization_msgs::InteractiveMarkerControl::NONE)
+  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  if (interaction_mode != visualization_msgs::msg::InteractiveMarkerControl::NONE)
     menu_handler_.apply( *server_, int_marker.name );
 }
 
@@ -272,95 +259,99 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 /**
  * @function makeMenuMarker
  */
-void JoseMarkers::makeMenuMarker( const tf::Vector3& position,
+void JoseMarkers::makeMenuMarker( const tf2::Vector3& position,
 				  std::string frame_id)
 {
-  visualization_msgs::InteractiveMarker int_marker;
+  visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = frame_id;
-  tf::pointTFToMsg(position, int_marker.pose.position);
+  int_marker.pose.position.x = position.getX();
+  int_marker.pose.position.y = position.getY();
+  int_marker.pose.position.z = position.getZ();  
   int_marker.scale = 1;
 
   int_marker.name = "context_menu";
   int_marker.description = "Context Menu\n(Right Click)";
 
-  visualization_msgs::InteractiveMarkerControl control;
+  visualization_msgs::msg::InteractiveMarkerControl control;
 
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MENU;
+  control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MENU;
   control.name = "menu_only_control";
 
-  visualization_msgs::Marker marker = makeBox( int_marker );
+  visualization_msgs::msg::Marker marker = makeBox( int_marker );
   control.markers.push_back( marker );
   control.always_visible = true;
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, boost::bind(&JoseMarkers::processFeedback,this,_1));
+  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback,this,_1));
   menu_handler_.apply( *server_, int_marker.name );
 }
 
 /**
  * @function makeButtonMarker
  */
-void JoseMarkers::makeButtonMarker( const tf::Vector3& position,
+void JoseMarkers::makeButtonMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
-  visualization_msgs::InteractiveMarker int_marker;
+  visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = frame_id;
-  tf::pointTFToMsg(position, int_marker.pose.position);
+  int_marker.pose.position.x = position.getX();
+  int_marker.pose.position.y = position.getY();
+  int_marker.pose.position.z = position.getZ();  
   int_marker.scale = 1;
 
   int_marker.name = "button";
   int_marker.description = "Button\n(Left Click)";
 
-  visualization_msgs::InteractiveMarkerControl control;
+  visualization_msgs::msg::InteractiveMarkerControl control;
 
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
+  control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::BUTTON;
   control.name = "button_control";
 
-  visualization_msgs::Marker marker = makeBox( int_marker );
+  visualization_msgs::msg::Marker marker = makeBox( int_marker );
   control.markers.push_back( marker );
   control.always_visible = true;
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, boost::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
 }
 
 /**
  * @function makeMovingMarker
  */
-void JoseMarkers::makeMovingMarker( const tf::Vector3& position,
+void JoseMarkers::makeMovingMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
-  visualization_msgs::InteractiveMarker int_marker;
+  visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = frame_id;
-  tf::pointTFToMsg(position, int_marker.pose.position);
+  int_marker.pose.position.x = position.getX();
+  int_marker.pose.position.y = position.getY();
+  int_marker.pose.position.z = position.getZ();  
   int_marker.scale = 1;
 
   int_marker.name = "moving";
   int_marker.description = "Marker Attached to a\nMoving Frame";
 
-  visualization_msgs::InteractiveMarkerControl control;
+  visualization_msgs::msg::InteractiveMarkerControl control;
 
-  control.orientation.w = 1;
-  control.orientation.x = 1;
-  control.orientation.y = 0;
-  control.orientation.z = 0;
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+  tf2::Quaternion orien(0, 0, 0, 1);
+  control.orientation = tf2::toMsg(orien);
+  control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
   int_marker.controls.push_back(control);
 
-  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_PLANE;
+  control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_PLANE;
   control.always_visible = true;
   control.markers.push_back( makeBox(int_marker) );
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, boost::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
 }
 
   
-void JoseMarkers::saveMarker( visualization_msgs::InteractiveMarker int_marker )
+void JoseMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
 {
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, boost::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
 }

@@ -1,4 +1,5 @@
 #include <jose/jose.h>
+#include <tf2/time.h>
 
 Jose::Jose()
 {}
@@ -6,25 +7,33 @@ Jose::Jose()
 /**
  * @function init
  */
-void Jose::init(std::string _group)
+void Jose::init(rclcpp::Node::SharedPtr _nh,
+		std::string _group)
 {
+  nh_ = _nh;
   group_ = _group;
   
-  std::string urdf_param = "/robot_description";
-  std::string srdf_param = "/robot_description_semantic";
+  std::string urdf_param = "robot_description";
+  std::string srdf_param = "robot_description_semantic";
 
   std::string urdf_string;
   std::string srdf_string;
 
-  nh_.getParam(urdf_param, urdf_string);
-  nh_.getParam(srdf_param, srdf_string);
+  urdf_string = nh_->declare_parameter(urdf_param, std::string(""));
+  srdf_string = nh_->declare_parameter(srdf_param, std::string(""));
 
+  if(urdf_string.empty() || srdf_string.empty())
+  {
+    RCLCPP_FATAL(nh_->get_logger(), "Could not load robot description and/or semantic");
+    return;
+  }
+  
   urdf_ = urdf::parseURDF(urdf_string);
   urdf_model_.initString(urdf_string);
 
   if(!kdl_parser::treeFromUrdfModel(urdf_model_, kdl_tree_))
   {
-    ROS_ERROR("Failure parsing KDL tree \n");
+    RCLCPP_ERROR(nh_->get_logger(), "Failure parsing KDL tree \n");
     return;
   }
   
@@ -56,7 +65,7 @@ void Jose::init(std::string _group)
   
   printf("\t * Init jose. Found: %d  \n", found);
   
-  trac_ik_.reset( new TRAC_IK::TRAC_IK(group_base_link_, group_tip_link_,
+  trac_ik_.reset( new TRAC_IK::TRAC_IK(nh_, group_base_link_, group_tip_link_,
 				       urdf_param) );
 		  
 }
@@ -68,9 +77,9 @@ void Jose::getJointNames()
   KDL::Chain chain;
   if(!kdl_tree_.getChain(group_base_link_, group_tip_link_, chain))
   {
-    ROS_ERROR("Failure parsing chain from %s to %s \n",
-	      group_base_link_.c_str(),
-	      group_tip_link_.c_str());
+    RCLCPP_ERROR(nh_->get_logger(), "Failure parsing chain from %s to %s \n",
+		 group_base_link_.c_str(),
+		 group_tip_link_.c_str());
     return;
   }
 
@@ -143,7 +152,7 @@ KDL::JntArray Jose::getMidJoint()
 }
 
 bool Jose::getMsg(const std::vector<double> &_joint_vals,
-		  sensor_msgs::JointState &_msg)
+		  sensor_msgs::msg::JointState &_msg)
 {
   if(_joint_vals.size() != joints_.size())
   {
@@ -152,7 +161,7 @@ bool Jose::getMsg(const std::vector<double> &_joint_vals,
     return false;
   }
 
-  _msg.header.stamp = ros::Time::now();
+  _msg.header.stamp = nh_->get_clock()->now();
   _msg.header.frame_id = group_base_link_;
   _msg.name = joints_;
   _msg.position = _joint_vals;

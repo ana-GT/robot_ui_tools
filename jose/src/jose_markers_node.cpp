@@ -1,24 +1,27 @@
 #include <jose/jose_markers.h>
 
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "jose_markers_node");
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("jose_markers_node");
 
   std::string group;
-  
-  if(!pnh.getParam("group", group))
+
+  group = node->declare_parameter("group", "");
+  if(group.empty())
   {
-    ROS_ERROR("group parameter was not read!");
+    RCLCPP_ERROR(node->get_logger(), "group parameter was not read!");
     return 0;
   }
-  ROS_WARN("group parameter: %s \n", group.c_str() );
+  RCLCPP_WARN(node->get_logger(), "group parameter: %s \n", group.c_str() );
   
-  JoseMarkers jm(pnh);
+  JoseMarkers jm(node);
   jm.init(group);
-  ros::spin();
+  
+  rclcpp::spin(node);
   jm.stop();
+  rclcpp::shutdown();
 }
 // %EndTag(main)%
 

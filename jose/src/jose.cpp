@@ -43,7 +43,7 @@ void Jose::init(rclcpp::Node::SharedPtr _nh,
   bool found = false;
   for(auto gi : srdf_.getGroups())
   {
-    printf("\t * Group : %s. number of chains: %d joints: %d, links: %d \n",
+    printf("\t * Group : %s. number of chains: %lu joints: %lu, links: %lu \n",
 	   gi.name_.c_str(),
 	   gi.chains_.size(),
 	   gi.joints_.size(),
@@ -98,7 +98,7 @@ void Jose::getJointNames()
       
   }
 
-  printf("\t ** Joints of size: %d \n", joints_.size());
+  printf("\t ** Joints of size: %lu \n", joints_.size());
   return;
 }
 
@@ -134,7 +134,7 @@ bool Jose::getIK(Eigen::Vector3d _pos,
 bool Jose::getFK(std::vector<double> _joints,
 		 Eigen::Isometry3d &_pose)
 {
-
+  return true;
 }
 
 KDL::JntArray Jose::getMidJoint()
@@ -156,7 +156,7 @@ bool Jose::getMsg(const std::vector<double> &_joint_vals,
 {
   if(_joint_vals.size() != joints_.size())
   {
-    printf("Mismatch of sizes: input: %d expected: %d \n",
+    printf("Mismatch of sizes: input: %lu expected: %lu \n",
 	   _joint_vals.size(), joints_.size());
     return false;
   }

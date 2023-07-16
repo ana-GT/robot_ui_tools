@@ -9,13 +9,16 @@ from launch_pal.include_utils import include_launch_py_description
 def generate_launch_description():
 
     robot_state_publisher = include_launch_py_description(
-        'tiago_description', ['launch', 'robot_state_publisher.launch.py'])
+        'tiago_description', ['launch', 'robot_state_publisher.launch.py'],
+        launch_arguments={
+            'end_effector': 'pal-gripper'
+            }.items() )
 
     sources_list = {
         "source_list": ["/move_group/fake_controller_joint_states"]
     }
     
-    
+
     joint_pub = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',

@@ -17,7 +17,7 @@ def load_file(package_name, file_path):
     try:
         with open(absolute_file_path, "r") as file:
             return file.read()
-    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+    except EnvironmentError:
         return None
 
 
@@ -28,7 +28,7 @@ def load_yaml(package_name, file_path):
     try:
         with open(absolute_file_path, "r") as file:
             return yaml.safe_load(file)
-    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+    except EnvironmentError:
         return None
 
 
@@ -36,11 +36,14 @@ def generate_launch_description():
 
     robot_description_config = xacro.process_file(
         os.path.join(
-            get_package_share_directory("franka_description"),
-            "robots",
-            "panda_arm.urdf.xacro",
+            get_package_share_directory("yumi_description"),
+            "urdf",
+            "yumi.urdf.xacro",
         ),
-        mappings ={'hand': 'true'}
+        in_order = False,
+        mappings = {'arms_interface': 'VelocityJointInterface', 
+                    'grippers_interface': 'EffortJointInterface',
+                    'yumi_setup' : 'default'}
     )
     robot_description = {"robot_description": robot_description_config.toxml()}
 
@@ -51,13 +54,27 @@ def generate_launch_description():
 #        "robot_description_semantic": robot_description_semantic_config
 #    }
 
-    panda_zero_joints = {
-      "zeros.panda_joint4": -1.5708,
-      "zeros.panda_joint6": 1.5708 	
+    yumi_zero_joints = { 
+        "zeros": {
+          "yumi_joint_1_l": 0, 
+          "yumi_joint_2_l": -1.57, 
+          "yumi_joint_7_l": 1.57, 
+          "yumi_joint_3_l": 0.7, 
+          "yumi_joint_4_l": -1.57, 
+          "yumi_joint_5_l": 1.3, 
+          "yumi_joint_6_l": 1.57, 
+          "yumi_joint_1_r": 0, 
+          "yumi_joint_2_r": -1.57, 
+          "yumi_joint_7_r": -1.57, 
+          "yumi_joint_3_r": 0.7, 
+          "yumi_joint_4_r": -1.57, 
+          "yumi_joint_5_r": -1.3, 
+          "yumi_joint_6_r": -1.57        
+       }
     }
 
     rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
-    rviz_full_config = os.path.join(rviz_base, "panda.rviz")
+    rviz_full_config = os.path.join(rviz_base, "yumi.rviz")
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -68,15 +85,6 @@ def generate_launch_description():
         robot_description #,
 #        robot_description_semantic
         ]
-    )
-
-    # Static TF
-    static_tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_transform_publisher",
-        output="log",
-        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "panda_link0"],
     )
 
     # Publish TF
@@ -93,14 +101,14 @@ def generate_launch_description():
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        parameters=[panda_zero_joints],
+        parameters=[yumi_zero_joints],
         output='screen')
 
 
     return LaunchDescription(
         [
             rviz_node,
-            static_tf,
+#            static_tf,
             robot_state_publisher,
             joint_publisher
         ]

@@ -2,35 +2,12 @@ import os
 import yaml
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
 import xacro
-
-
-def load_file(package_name, file_path):
-    package_path = get_package_share_directory(package_name)
-    absolute_file_path = os.path.join(package_path, file_path)
-
-    try:
-        with open(absolute_file_path, "r") as file:
-            return file.read()
-    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
-        return None
-
-
-def load_yaml(package_name, file_path):
-    package_path = get_package_share_directory(package_name)
-    absolute_file_path = os.path.join(package_path, file_path)
-
-    try:
-        with open(absolute_file_path, "r") as file:
-            return yaml.safe_load(file)
-    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
-        return None
-
 
 def generate_launch_description():
 
@@ -44,12 +21,16 @@ def generate_launch_description():
     )
     robot_description = {"robot_description": robot_description_config.toxml()}
 
-#    robot_description_semantic_config = load_file(
-#        "moveit_resources_panda_moveit_config", "config/panda.srdf"
-#    )
-#    robot_description_semantic = {
-#        "robot_description_semantic": robot_description_semantic_config
-#    }
+    srdf_file = os.path.join(get_package_share_directory('robots_config'),
+                                              'panda',
+                                              'srdf',
+                                              'panda_arm.srdf.xacro')
+    srdf_config = Command(
+        [FindExecutable(name='xacro'), ' ', srdf_file, ' hand:=true']
+    )
+    robot_description_semantic = {
+        'robot_description_semantic': srdf_config
+    }
 
     panda_zero_joints = {
       "zeros.panda_joint4": -1.5708,

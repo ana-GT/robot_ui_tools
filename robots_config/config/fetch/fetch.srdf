@@ -13,17 +13,18 @@
         <joint name="forearm_roll_joint" />
         <joint name="wrist_flex_joint" />
         <joint name="wrist_roll_joint" />-->
-      <chain base_link="torso_lift_link" tip_link="gripper_link" />
+      <chain base_link="torso_lift_link" tip_link="tcp_link" />
     </group>
     <group name="arm_with_torso">
-        <joint name="torso_lift_joint" />
+        <!--<joint name="torso_lift_joint" />
         <joint name="shoulder_pan_joint" />
         <joint name="shoulder_lift_joint" />
         <joint name="upperarm_roll_joint" />
         <joint name="elbow_flex_joint" />
         <joint name="forearm_roll_joint" />
         <joint name="wrist_flex_joint" />
-        <joint name="wrist_roll_joint" />
+        <joint name="wrist_roll_joint" />-->
+        <chain base_link="base_link" tip_link="tcp_link" />
     </group>
     <group name="gripper">
         <link name="gripper_link" />
@@ -32,7 +33,7 @@
     </group>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="wrist_roll_link" group="gripper" />
-    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <!--DISABLE COLLISIONS:  -->
     <disable_collisions link1="base_link" link2="bellows_link" reason="Default" />
     <disable_collisions link1="base_link" link2="bellows_link2" reason="Default" />
     <disable_collisions link1="base_link" link2="estop_link" reason="Adjacent" />

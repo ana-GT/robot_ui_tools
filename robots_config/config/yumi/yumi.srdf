@@ -1,0 +1,172 @@
+<?xml version="1.0" ?>
+
+<robot name="yumi">
+
+    <group name="left_arm">
+        <chain base_link="yumi_body" tip_link="yumi_link_7_l" />
+    </group>
+    <group name="right_arm">
+        <chain base_link="yumi_body" tip_link="yumi_link_7_r" />
+    </group>
+
+    <!--<group name="both_arms">
+        <group name="left_arm" />
+        <group name="right_arm" />
+    </group> -->
+    <group name="left_gripper">
+        <link name="gripper_l_finger_r" />
+        <link name="gripper_l_base" />
+        <link name="gripper_l_finger_l" />
+    </group>
+    <group name="right_gripper">
+        <link name="gripper_r_base" />
+        <link name="gripper_r_finger_r" />
+        <link name="gripper_r_finger_l" />
+    </group>
+
+    <group_state group="left_arm" name="left_resting">
+      <joint name="yumi_joint_1_l" value="0.0"/>
+      <joint name="yumi_joint_2_l" value="-1.5708"/>
+      <joint name="yumi_joint_7_l" value="1.5708"/>
+      <joint name="yumi_joint_3_l" value="0.707"/>
+      <joint name="yumi_joint_4_l" value="-1.5708"/>
+      <joint name="yumi_joint_5_l" value="1.3"/>
+      <joint name="yumi_joint_6_l" value="1.5708"/>
+    </group_state>
+
+    <group_state group="right_arm" name="right_resting">
+      <joint name="yumi_joint_1_r" value="0.0"/>
+      <joint name="yumi_joint_2_r" value="-1.5708"/>
+      <joint name="yumi_joint_7_r" value="-1.4"/>
+      <joint name="yumi_joint_3_r" value="0.707"/>
+      <joint name="yumi_joint_4_r" value="-1.5708"/>
+      <joint name="yumi_joint_5_r" value="-1.0"/>
+      <joint name="yumi_joint_6_r" value="-1.5708"/>
+    </group_state>
+
+    <group_state group="left_arm" name="left_default">
+      <joint name="yumi_joint_1_l" value="-1.41"/>
+      <joint name="yumi_joint_2_l" value="-2.1"/>
+      <joint name="yumi_joint_7_l" value="0.3"/>
+      <joint name="yumi_joint_3_l" value="0.0"/>
+      <joint name="yumi_joint_4_l" value="0.0"/>
+      <joint name="yumi_joint_5_l" value="0.0"/>
+      <joint name="yumi_joint_6_l" value="0.71"/>
+    </group_state>
+
+    <group_state group="right_arm" name="right_default">
+      <joint name="yumi_joint_1_r" value="1.41"/>
+      <joint name="yumi_joint_2_r" value="-2.1"/>
+      <joint name="yumi_joint_7_r" value="0.3"/>
+      <joint name="yumi_joint_3_r" value="0.0"/>
+      <joint name="yumi_joint_4_r" value="0.0"/>
+      <joint name="yumi_joint_5_r" value="0.0"/>
+      <joint name="yumi_joint_6_r" value="-0.71"/>
+    </group_state>
+
+    <group_state group="left_gripper" name="close">
+      <joint name="gripper_l_joint" value="0.0"/>
+      <joint name="gripper_l_joint_m" value="0.0"/>
+    </group_state>
+
+    <group_state group="left_gripper" name="close_14">
+      <joint name="gripper_l_joint" value="0.014"/>
+      <joint name="gripper_l_joint_m" value="0.014"/>
+    </group_state>
+
+    <group_state group="left_gripper" name="close_12">
+      <joint name="gripper_l_joint" value="0.012"/>
+      <joint name="gripper_l_joint_m" value="0.012"/>
+    </group_state>
+
+
+    <group_state group="left_gripper" name="close_13">
+      <joint name="gripper_l_joint" value="0.013"/>
+      <joint name="gripper_l_joint_m" value="0.013"/>
+    </group_state>
+
+
+    <group_state group="left_gripper" name="open">
+      <joint name="gripper_l_joint" value="0.024"/>
+      <joint name="gripper_l_joint_m" value="0.024"/>
+    </group_state>
+
+    <group_state group="right_gripper" name="close">
+      <joint name="gripper_r_joint" value="0.0"/>
+      <joint name="gripper_r_joint_m" value="0.0"/>
+    </group_state>
+
+    <group_state group="right_gripper" name="open">
+      <joint name="gripper_r_joint" value="0.024"/>
+      <joint name="gripper_r_joint_m" value="0.024"/>
+    </group_state>
+
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="left_gripper_ee" parent_link="yumi_link_7_l" group="left_gripper" parent_group="left_arm" />
+    <end_effector name="right_gripper_ee" parent_link="yumi_link_7_r" group="right_gripper" parent_group="right_arm" />
+    <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
+    <passive_joint name="gripper_l_joint_m" />
+    <passive_joint name="gripper_r_joint_m" />
+    <passive_joint name="gripper_l_joint" />
+    <passive_joint name="gripper_r_joint" />
+
+    <!-- HACK: STILL DONT KNOW WHAT IS WRONG WITH RIGHT ARM!!!!! -->
+    <disable_collisions link1="yumi_link_5_r" link2="yumi_link_7_r" reason="Never" />
+    <disable_collisions link1="yumi_link_5_r" link2="gripper_r_base" reason="Never" />
+    <disable_collisions link1="yumi_link_5_l" link2="yumi_link_7_l" reason="Never" />
+    <disable_collisions link1="yumi_link_5_l" link2="gripper_l_base" reason="Never" />
+
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="gripper_l_base" link2="gripper_l_finger_l" reason="Adjacent" />
+    <disable_collisions link1="gripper_l_base" link2="gripper_l_finger_r" reason="Adjacent" />
+    <disable_collisions link1="gripper_l_base" link2="yumi_link_3_l" reason="Never" />
+    <disable_collisions link1="gripper_l_base" link2="yumi_link_4_l" reason="Never" />
+    <disable_collisions link1="gripper_l_base" link2="yumi_link_6_l" reason="Never" />
+    <disable_collisions link1="gripper_l_base" link2="yumi_link_7_l" reason="Adjacent" />
+    <disable_collisions link1="gripper_l_finger_l" link2="gripper_l_finger_r" reason="Default" />
+    <disable_collisions link1="gripper_l_finger_l" link2="yumi_link_3_l" reason="Never" />
+    <disable_collisions link1="gripper_l_finger_l" link2="yumi_link_4_l" reason="Never" />
+    <disable_collisions link1="gripper_l_finger_l" link2="yumi_link_5_l" reason="Never" />
+    <disable_collisions link1="gripper_l_finger_l" link2="yumi_link_6_l" reason="Never" />
+    <disable_collisions link1="gripper_l_finger_l" link2="yumi_link_7_l" reason="Never" />
+    <disable_collisions link1="gripper_r_base" link2="gripper_r_finger_l" reason="Adjacent" />
+    <disable_collisions link1="gripper_r_base" link2="gripper_r_finger_r" reason="Adjacent" />
+    <disable_collisions link1="gripper_r_base" link2="yumi_link_3_r" reason="Never" />
+    <disable_collisions link1="gripper_r_base" link2="yumi_link_4_r" reason="Never" />
+    <disable_collisions link1="gripper_r_base" link2="yumi_link_6_r" reason="Never" />
+    <disable_collisions link1="gripper_r_base" link2="yumi_link_7_r" reason="Adjacent" />
+    <disable_collisions link1="gripper_r_finger_l" link2="gripper_r_finger_r" reason="Default" />
+    <disable_collisions link1="gripper_r_finger_r" link2="yumi_link_3_r" reason="Never" />
+    <disable_collisions link1="gripper_r_finger_r" link2="yumi_link_4_r" reason="Never" />
+    <disable_collisions link1="gripper_r_finger_r" link2="yumi_link_5_r" reason="Never" />
+    <disable_collisions link1="gripper_r_finger_r" link2="yumi_link_6_r" reason="Never" />
+    <disable_collisions link1="gripper_r_finger_r" link2="yumi_link_7_r" reason="Never" />
+    <disable_collisions link1="yumi_body" link2="yumi_link_1_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_body" link2="yumi_link_1_r" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_1_l" link2="yumi_link_1_r" reason="Never" />
+    <disable_collisions link1="yumi_link_1_l" link2="yumi_link_2_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_1_l" link2="yumi_link_3_l" reason="Never" />
+    <disable_collisions link1="yumi_link_1_r" link2="yumi_link_2_r" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_1_r" link2="yumi_link_3_r" reason="Never" />
+    <disable_collisions link1="yumi_link_2_l" link2="yumi_link_3_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_2_r" link2="yumi_link_3_r" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_3_l" link2="yumi_link_4_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_3_l" link2="yumi_link_5_l" reason="Never" />
+    <disable_collisions link1="yumi_link_3_l" link2="yumi_link_6_l" reason="Never" />
+    <disable_collisions link1="yumi_link_3_l" link2="yumi_link_7_l" reason="Never" />
+    <disable_collisions link1="yumi_link_3_r" link2="yumi_link_4_r" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_3_r" link2="yumi_link_5_r" reason="Never" />
+    <disable_collisions link1="yumi_link_3_r" link2="yumi_link_6_r" reason="Never" />
+    <disable_collisions link1="yumi_link_3_r" link2="yumi_link_7_r" reason="Never" />
+    <disable_collisions link1="yumi_link_4_l" link2="yumi_link_5_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_4_l" link2="yumi_link_6_l" reason="Never" />
+    <disable_collisions link1="yumi_link_4_l" link2="yumi_link_7_l" reason="Never" />
+    <disable_collisions link1="yumi_link_4_r" link2="yumi_link_5_r" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_4_r" link2="yumi_link_6_r" reason="Never" />
+    <disable_collisions link1="yumi_link_4_r" link2="yumi_link_7_r" reason="Never" />
+    <disable_collisions link1="yumi_link_5_l" link2="yumi_link_6_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_5_r" link2="yumi_link_6_r" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_6_l" link2="yumi_link_7_l" reason="Adjacent" />
+    <disable_collisions link1="yumi_link_6_r" link2="yumi_link_7_r" reason="Adjacent" />
+</robot>
+

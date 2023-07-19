@@ -4,7 +4,7 @@ project(robots_config)
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY launch rviz config
+  DIRECTORY launch rviz config robots
   DESTINATION share/${PROJECT_NAME}
 )
 

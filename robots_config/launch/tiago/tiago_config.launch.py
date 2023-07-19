@@ -5,25 +5,47 @@ from launch_ros.actions import Node
 
 from launch_pal.include_utils import include_launch_py_description
 
+from launch.substitutions import Command, PathJoinSubstitution, PythonExpression, LaunchConfiguration
+from launch_ros.substitutions import FindPackageShare, ExecutableInPackage
+
+from tiago_description.tiago_launch_utils import (get_tiago_hw_arguments,
+						    TiagoXacroConfigSubstitution)
+
 
 def generate_launch_description():
 
-    robot_state_publisher = include_launch_py_description(
-        'tiago_description', ['launch', 'robot_state_publisher.launch.py'],
-        launch_arguments={
-            'end_effector': 'pal-gripper'
-            }.items() )
+    urdf_config = Command(
+        [
+            ExecutableInPackage(package='xacro', executable="xacro"),
+            ' ',
+            PathJoinSubstitution(
+                [FindPackageShare('robots_config'),
+                 'robots', 'tiago', 'tiago.urdf.xacro']),
+            TiagoXacroConfigSubstitution()
+        ])
 
-    sources_list = {
-        "source_list": ["/move_group/fake_controller_joint_states"]
-    }
-    
+
+    parameters = {'robot_description': urdf_config}
+
+
+    rsp = Node(package='robot_state_publisher',
+               executable='robot_state_publisher',
+               output='both',
+               parameters=[{'robot_description': urdf_config}])
+
+    tiago_args = get_tiago_hw_arguments(
+        laser_model=True,
+        arm=True,
+        end_effector=True,
+        ft_sensor=True,
+        camera_model=True,
+        default_end_effector='pal-gripper',
+        default_laser_model="sick-571")
 
     joint_pub = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        parameters=[sources_list],
         output='screen')
 
     rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
@@ -36,7 +58,8 @@ def generate_launch_description():
         output='screen')
 
     return LaunchDescription([
-        robot_state_publisher,
+        *tiago_args,
+        rsp,
         joint_pub,
         start_rviz_cmd
     ])

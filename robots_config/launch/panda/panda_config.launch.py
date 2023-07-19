@@ -13,15 +13,15 @@ def generate_launch_description():
 
     robot_description_config = xacro.process_file(
         os.path.join(
-            get_package_share_directory("franka_description"),
-            "robots",
-            "panda_arm.urdf.xacro",
+            get_package_share_directory("robots_config"),
+            "robots", "panda",
+            "panda.urdf.xacro",
         ),
         mappings ={'hand': 'true'}
     )
     robot_description = {"robot_description": robot_description_config.toxml()}
 
-    srdf_file = os.path.join(get_package_share_directory('robots_config'),
+    srdf_file = os.path.join(get_package_share_directory('robots_config'),'config',
                                               'panda',
                                               'srdf',
                                               'panda_arm.srdf.xacro')

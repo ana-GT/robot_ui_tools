@@ -3,10 +3,10 @@
 <robot name="yumi">
 
     <group name="left_arm">
-        <chain base_link="yumi_body" tip_link="yumi_link_7_l" />
+        <chain base_link="yumi_body" tip_link="left_tcp_link" />
     </group>
     <group name="right_arm">
-        <chain base_link="yumi_body" tip_link="yumi_link_7_r" />
+        <chain base_link="yumi_body" tip_link="right_tcp_link" />
     </group>
 
     <!--<group name="both_arms">

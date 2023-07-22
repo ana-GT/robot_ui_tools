@@ -14,9 +14,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <Eigen/Geometry>
 
-#include <reachability_msgs/srv/get_hand_to_user.hpp>
-
-//#include <jose/jose.h>
+#include <reachability_msgs/srv/move_robot_to_task.hpp>
 
 #include <math.h>
 
@@ -31,7 +29,7 @@ public:
   void stop();
   
   visualization_msgs::msg::Marker makeBox( visualization_msgs::msg::InteractiveMarker &msg );
-  visualization_msgs::msg::Marker makeHuman( visualization_msgs::msg::InteractiveMarker &msg );
+  visualization_msgs::msg::Marker makeBottle( visualization_msgs::msg::InteractiveMarker &msg );
   visualization_msgs::msg::InteractiveMarkerControl& makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg );
  
   void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
@@ -59,11 +57,7 @@ protected:
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   //Jose jose_;
   geometry_msgs::msg::PoseStamped goal_pose_;
-  rclcpp::Client<reachability_msgs::srv::GetHandToUser>::SharedPtr client_;
-
-  // Sim joint_states
-  std::string js_topic_;
-  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr js_pub_;
+  rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedPtr client_;
 
 };
 

@@ -2,7 +2,7 @@
  * @file jose_markers.cpp
  */
 
-#include <jose/jose_markers.h>
+#include <jose/robot_to_task_markers.h>
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 JoseMarkers::JoseMarkers(rclcpp::Node::SharedPtr _nh) :
   nh_(_nh)
 {
-  server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/human_marker",
+  server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/task_marker",
 									   nh_->get_node_base_interface(),
 									   nh_->get_node_clock_interface(),
 									   nh_->get_node_logging_interface(),
@@ -30,24 +30,21 @@ void JoseMarkers::stop()
 
 void JoseMarkers::init(std::string _group)
 {
-  client_ = nh_->create_client<reachability_msgs::srv::GetHandToUser>("hand_to_user");
+  client_ = nh_->create_client<reachability_msgs::srv::MoveRobotToTask>("robot_to_task");
 
   //ros::Duration(0.1).sleep();
 
-  menu_handler_.insert( "Get Hand Pose", std::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( "Get Robot pose", std::bind(&JoseMarkers::processFeedback, this, _1));
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
   menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
   menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
 
   tf2::Vector3 position;
-  std::string frame_id = "world"; //jose_.getBaseLink();
+  std::string frame_id = "world"; 
   
   position = tf2::Vector3( 0, 0, 0);
   make6DofMarker( false, visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D,
 		  position, true, frame_id );
-
-  //js_topic_ = "/move_group/fake_controller_joint_states";
-  //js_pub_ = nh_->create_publisher<sensor_msgs::msg::JointState>(js_topic_, 10);
 
   server_->applyChanges();
 
@@ -72,12 +69,12 @@ visualization_msgs::msg::Marker JoseMarkers::makeBox( visualization_msgs::msg::I
   return marker;
 }
 
-visualization_msgs::msg::Marker JoseMarkers::makeHuman( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::Marker JoseMarkers::makeBottle(visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
-  RCLCPP_WARN(rclcpp::get_logger("jose_markers"), "Make Human...");
+  RCLCPP_WARN(nh_->get_logger(), "Make bottle...");
   marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-  marker.mesh_resource = "package://jose/meshes/person_standing_reference.dae";
+  marker.mesh_resource = "package://jose/meshes/wine_bottle_reference.dae";
   marker.mesh_use_embedded_materials = true;
   marker.scale.x =1.0; //msg.scale * 0.4;
   marker.scale.y = 1.0; //msg.scale * 0.4;
@@ -97,7 +94,7 @@ visualization_msgs::msg::InteractiveMarkerControl& JoseMarkers::makeBoxControl( 
 {
   visualization_msgs::msg::InteractiveMarkerControl control;
   control.always_visible = true;
-  control.markers.push_back( this->makeHuman(msg) ); // makeBox
+  control.markers.push_back( this->makeBottle(msg) ); // makeBox
   msg.controls.push_back( control );
 
   return msg.controls.back();
@@ -123,20 +120,21 @@ void JoseMarkers::processFeedback( const visualization_msgs::msg::InteractiveMar
   {
   case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
+      RCLCPP_INFO_STREAM( nh_->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked");      
 
-      RCLCPP_INFO_STREAM( nh_->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked");
+       auto request = std::make_shared<reachability_msgs::srv::MoveRobotToTask::Request>();
+      RCLCPP_INFO( nh_->get_logger(), "Send request to move to tcp pose: %f %f %f", 
+          goal_pose_.pose.position.x, goal_pose_.pose.position.y, goal_pose_.pose.position.z);
 
-      
-       auto request = std::make_shared<reachability_msgs::srv::GetHandToUser::Request>();
-       request->pose = goal_pose_;
+       request->tcp_poses.push_back(goal_pose_);
 
       while (!client_->wait_for_service(1s)) {
       
         if (!rclcpp::ok()) {
-          RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+          RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
           return;
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
+        RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
       }
 
       auto result = client_->async_send_request(request);

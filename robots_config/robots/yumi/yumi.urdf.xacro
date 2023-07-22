@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="yumi" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--Import the original Fetch -->
+  <xacro:include filename="$(find yumi_description)/urdf/yumi.urdf.xacro"/>
+
+  <!-- TCP link-->
+  <link name="left_tcp_link" />
+  <joint name="left_tcp_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0.125"/>
+      <parent link="gripper_l_base"/>
+      <child link="left_tcp_link"/>
+  </joint>
+
+  <link name="right_tcp_link" />
+  <joint name="right_tcp_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0.125"/>
+      <parent link="gripper_r_base"/>
+      <child link="right_tcp_link"/>
+  </joint>
+
+</robot>

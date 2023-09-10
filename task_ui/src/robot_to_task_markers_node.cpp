@@ -1,10 +1,13 @@
-#include <jose/jose_markers.h>
+/**
+ * @file robot_to_task_markers_node.cpp
+ */
+#include <task_ui/robot_to_task_markers.h>
 
 
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("jose_markers_node");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("robot_to_task_markers_node");
 
   std::string group;
 
@@ -23,5 +26,4 @@ int main(int argc, char* argv[])
   jm.stop();
   rclcpp::shutdown();
 }
-// %EndTag(main)%
 

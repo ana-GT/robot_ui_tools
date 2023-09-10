@@ -38,9 +38,9 @@ def generate_launch_description():
         camera_model=True,
         default_laser_model="sick-571")
 
-    jose_markers = Node(package='jose',
-                        executable='jose_markers_node',
+    task_ui_markers = Node(package='task_ui',
+                        executable='task_ui_markers_node',
                         output='screen',
                         parameters=[parameters])
 
-    return LaunchDescription([*tiago_args, jose_markers])
+    return LaunchDescription([*tiago_args, task_ui_markers])

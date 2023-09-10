@@ -1,17 +1,17 @@
 /**
- * @file jose_markers.cpp
+ * @file task_ui_markers.cpp
  */
 
-#include <jose/robot_to_task_markers.h>
+#include <task_ui/robot_to_task_markers.h>
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 /**
- * @function JoseMarkers
+ * @function TaskUiMarkers
  * @brief Constructor
  */
-JoseMarkers::JoseMarkers(rclcpp::Node::SharedPtr _nh) :
+TaskUiMarkers::TaskUiMarkers(rclcpp::Node::SharedPtr _nh) :
   nh_(_nh)
 {
   server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/task_marker",
@@ -23,12 +23,12 @@ JoseMarkers::JoseMarkers(rclcpp::Node::SharedPtr _nh) :
 
 }
 
-void JoseMarkers::stop()
+void TaskUiMarkers::stop()
 {
   server_.reset();
 }
 
-void JoseMarkers::init(std::string _group)
+void TaskUiMarkers::init(std::string _group)
 {
   client_ = nh_->create_client<reachability_msgs::srv::MoveRobotToTask>("robot_to_task");
 
@@ -53,7 +53,7 @@ void JoseMarkers::init(std::string _group)
 /**
  * @function makeBox
  */
-visualization_msgs::msg::Marker JoseMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::Marker TaskUiMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
 
@@ -69,12 +69,15 @@ visualization_msgs::msg::Marker JoseMarkers::makeBox( visualization_msgs::msg::I
   return marker;
 }
 
-visualization_msgs::msg::Marker JoseMarkers::makeBottle(visualization_msgs::msg::InteractiveMarker &msg )
+/**
+ * @function makeBottle
+ */
+visualization_msgs::msg::Marker TaskUiMarkers::makeBottle(visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
   RCLCPP_WARN(nh_->get_logger(), "Make bottle...");
   marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-  marker.mesh_resource = "package://jose/meshes/wine_bottle_reference.dae";
+  marker.mesh_resource = "package://task_ui/meshes/wine_bottle_reference.dae";
   marker.mesh_use_embedded_materials = true;
   marker.scale.x =1.0; //msg.scale * 0.4;
   marker.scale.y = 1.0; //msg.scale * 0.4;
@@ -90,7 +93,7 @@ visualization_msgs::msg::Marker JoseMarkers::makeBottle(visualization_msgs::msg:
 /**
  * @functino makeBoxControl
  */
-visualization_msgs::msg::InteractiveMarkerControl& JoseMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::InteractiveMarkerControl& TaskUiMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::InteractiveMarkerControl control;
   control.always_visible = true;
@@ -102,7 +105,7 @@ visualization_msgs::msg::InteractiveMarkerControl& JoseMarkers::makeBoxControl( 
 
 
 // %Tag(processFeedback)%
-void JoseMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void TaskUiMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   std::ostringstream s;
   s << "* Feedback from marker '" << feedback->marker_name;
@@ -157,7 +160,7 @@ void JoseMarkers::processFeedback( const visualization_msgs::msg::InteractiveMar
 /**
  * @function alignMarker
  */
-void JoseMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void TaskUiMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   geometry_msgs::msg::Pose pose = feedback->pose;
 
@@ -181,7 +184,7 @@ void JoseMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerF
 /**
  * @function make6DofMarkers
  */
-void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
+void TaskUiMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 				  const tf2::Vector3& position, bool show_6dof,
 				  std::string frame_id)
 {
@@ -264,7 +267,7 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 /**
  * @function makeMenuMarker
  */
-void JoseMarkers::makeMenuMarker( const tf2::Vector3& position,
+void TaskUiMarkers::makeMenuMarker( const tf2::Vector3& position,
 				  std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -295,7 +298,7 @@ void JoseMarkers::makeMenuMarker( const tf2::Vector3& position,
 /**
  * @function makeButtonMarker
  */
-void JoseMarkers::makeButtonMarker( const tf2::Vector3& position,
+void TaskUiMarkers::makeButtonMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -325,7 +328,7 @@ void JoseMarkers::makeButtonMarker( const tf2::Vector3& position,
 /**
  * @function makeMovingMarker
  */
-void JoseMarkers::makeMovingMarker( const tf2::Vector3& position,
+void TaskUiMarkers::makeMovingMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -355,7 +358,7 @@ void JoseMarkers::makeMovingMarker( const tf2::Vector3& position,
 }
 
   
-void JoseMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
+void TaskUiMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
 {
   server_->insert(int_marker);
   server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));

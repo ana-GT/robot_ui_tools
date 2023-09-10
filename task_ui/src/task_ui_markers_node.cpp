@@ -1,10 +1,10 @@
-#include <jose/robot_to_task_markers.h>
+#include <task_ui/task_ui_markers.h>
 
 
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("robot_to_task_markers_node");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("task_ui_markers_node");
 
   std::string group;
 
@@ -16,12 +16,11 @@ int main(int argc, char* argv[])
   }
   RCLCPP_WARN(node->get_logger(), "group parameter: %s \n", group.c_str() );
   
-  JoseMarkers jm(node);
-  jm.init(group);
+  TaskUiMarkers tum(node);
+  tum.init(group);
   
   rclcpp::spin(node);
-  jm.stop();
+  tum.stop();
   rclcpp::shutdown();
 }
-// %EndTag(main)%
 

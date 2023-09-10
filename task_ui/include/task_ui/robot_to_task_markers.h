@@ -1,5 +1,8 @@
 #pragma once
 
+/**
+ * @file robot_to_task_markers.h
+ */
 #include <rclcpp/rclcpp.hpp>
 
 #include <interactive_markers/interactive_marker_server.hpp>
@@ -19,12 +22,12 @@
 #include <math.h>
 
 /**
- * @class JoseMarkers
+ * @class TaskUiMarkers
  */
-class JoseMarkers
+class TaskUiMarkers
 {
 public:
-  JoseMarkers(rclcpp::Node::SharedPtr _nh);
+  TaskUiMarkers(rclcpp::Node::SharedPtr _nh);
   void init(std::string _group);
   void stop();
   
@@ -55,7 +58,7 @@ protected:
   interactive_markers::MenuHandler menu_handler_;
   rclcpp::TimerBase::SharedPtr frame_timer_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
-  //Jose jose_;
+  
   geometry_msgs::msg::PoseStamped goal_pose_;
   rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedPtr client_;
 

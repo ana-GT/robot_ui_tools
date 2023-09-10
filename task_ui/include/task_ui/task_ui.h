@@ -1,3 +1,8 @@
+#pragma once
+
+/**
+ * @file task_ui.h
+ */
 #include <rclcpp/rclcpp.hpp>
 #include <srdfdom/model.h>
 #include <urdf_parser/urdf_parser.h>
@@ -9,12 +14,12 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 
 /**
- * @class Jose
+ * @class TaskUi
  */
-class Jose {
+class TaskUi {
 
 public:
-  Jose();
+  TaskUi();
   void init(rclcpp::Node::SharedPtr _nh,
 	    std::string _group);
 

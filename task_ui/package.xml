@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>jose</name>
+  <name>task_ui</name>
   <version>1.0.0</version>
-  <description>The jose package</description>
+  <description>The task_ui package</description>
 
   <maintainer email="mecanita@gmail.com">Ana</maintainer>
 

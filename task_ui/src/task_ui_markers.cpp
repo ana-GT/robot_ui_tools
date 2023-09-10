@@ -1,17 +1,16 @@
 /**
- * @file jose_markers.cpp
+ * @file task_ui_markers.cpp
  */
-
-#include <jose/jose_markers.h>
+#include <task_ui/task_ui_markers.h>
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 /**
- * @function JoseMarkers
+ * @function TaskUiMarkers
  * @brief Constructor
  */
-JoseMarkers::JoseMarkers(rclcpp::Node::SharedPtr _nh) :
+TaskUiMarkers::TaskUiMarkers(rclcpp::Node::SharedPtr _nh) :
   nh_(_nh)
 {
   server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/human_marker",
@@ -20,24 +19,29 @@ JoseMarkers::JoseMarkers(rclcpp::Node::SharedPtr _nh) :
 									   nh_->get_node_logging_interface(),
 									   nh_->get_node_topics_interface(),
 									   nh_->get_node_services_interface());
-
 }
 
-void JoseMarkers::stop()
+/**
+ * @function stop
+ */
+void TaskUiMarkers::stop()
 {
   server_.reset();
 }
 
-void JoseMarkers::init(std::string _group)
+/**
+ * @function init
+ */
+void TaskUiMarkers::init(std::string _group)
 {
   client_ = nh_->create_client<reachability_msgs::srv::GetHandToUser>("hand_to_user");
 
   //ros::Duration(0.1).sleep();
 
-  menu_handler_.insert( "Get Hand Pose", std::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( "Get Hand Pose", std::bind(&TaskUiMarkers::processFeedback, this, _1));
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
-  menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
-  menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&TaskUiMarkers::processFeedback, this, _1));
+  menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&TaskUiMarkers::processFeedback, this, _1));
 
   tf2::Vector3 position;
   std::string frame_id = "world"; //jose_.getBaseLink();
@@ -56,7 +60,7 @@ void JoseMarkers::init(std::string _group)
 /**
  * @function makeBox
  */
-visualization_msgs::msg::Marker JoseMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::Marker TaskUiMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
 
@@ -72,12 +76,15 @@ visualization_msgs::msg::Marker JoseMarkers::makeBox( visualization_msgs::msg::I
   return marker;
 }
 
-visualization_msgs::msg::Marker JoseMarkers::makeHuman( visualization_msgs::msg::InteractiveMarker &msg )
+/**
+ * @function makeHuman
+ */
+visualization_msgs::msg::Marker TaskUiMarkers::makeHuman( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
-  RCLCPP_WARN(rclcpp::get_logger("jose_markers"), "Make Human...");
+  RCLCPP_WARN(rclcpp::get_logger("task_ui_markers"), "Make Human...");
   marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-  marker.mesh_resource = "package://jose/meshes/person_standing_reference.dae";
+  marker.mesh_resource = "package://task_ui/meshes/person_standing_reference.dae";
   marker.mesh_use_embedded_materials = true;
   marker.scale.x =1.0; //msg.scale * 0.4;
   marker.scale.y = 1.0; //msg.scale * 0.4;
@@ -91,9 +98,9 @@ visualization_msgs::msg::Marker JoseMarkers::makeHuman( visualization_msgs::msg:
 }
 
 /**
- * @functino makeBoxControl
+ * @function makeBoxControl
  */
-visualization_msgs::msg::InteractiveMarkerControl& JoseMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::InteractiveMarkerControl& TaskUiMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::InteractiveMarkerControl control;
   control.always_visible = true;
@@ -103,9 +110,10 @@ visualization_msgs::msg::InteractiveMarkerControl& JoseMarkers::makeBoxControl( 
   return msg.controls.back();
 }
 
-
-// %Tag(processFeedback)%
-void JoseMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+/**
+ * @function processFeedback
+ */
+void TaskUiMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   std::ostringstream s;
   s << "* Feedback from marker '" << feedback->marker_name;
@@ -159,7 +167,7 @@ void JoseMarkers::processFeedback( const visualization_msgs::msg::InteractiveMar
 /**
  * @function alignMarker
  */
-void JoseMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void TaskUiMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   geometry_msgs::msg::Pose pose = feedback->pose;
 
@@ -183,7 +191,7 @@ void JoseMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerF
 /**
  * @function make6DofMarkers
  */
-void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
+void TaskUiMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 				  const tf2::Vector3& position, bool show_6dof,
 				  std::string frame_id)
 {
@@ -257,7 +265,7 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
   }
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&TaskUiMarkers::processFeedback, this, _1));
   if (interaction_mode != visualization_msgs::msg::InteractiveMarkerControl::NONE)
     menu_handler_.apply( *server_, int_marker.name );
 }
@@ -266,7 +274,7 @@ void JoseMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 /**
  * @function makeMenuMarker
  */
-void JoseMarkers::makeMenuMarker( const tf2::Vector3& position,
+void TaskUiMarkers::makeMenuMarker( const tf2::Vector3& position,
 				  std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -290,14 +298,14 @@ void JoseMarkers::makeMenuMarker( const tf2::Vector3& position,
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback,this,_1));
+  server_->setCallback(int_marker.name, std::bind(&TaskUiMarkers::processFeedback,this,_1));
   menu_handler_.apply( *server_, int_marker.name );
 }
 
 /**
  * @function makeButtonMarker
  */
-void JoseMarkers::makeButtonMarker( const tf2::Vector3& position,
+void TaskUiMarkers::makeButtonMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -321,13 +329,13 @@ void JoseMarkers::makeButtonMarker( const tf2::Vector3& position,
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&TaskUiMarkers::processFeedback, this, _1));
 }
 
 /**
  * @function makeMovingMarker
  */
-void JoseMarkers::makeMovingMarker( const tf2::Vector3& position,
+void TaskUiMarkers::makeMovingMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -353,12 +361,12 @@ void JoseMarkers::makeMovingMarker( const tf2::Vector3& position,
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&TaskUiMarkers::processFeedback, this, _1));
 }
 
   
-void JoseMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
+void TaskUiMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
 {
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&TaskUiMarkers::processFeedback, this, _1));
 }

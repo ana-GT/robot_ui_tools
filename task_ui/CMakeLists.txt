@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
-project(jose)
+cmake_minimum_required(VERSION 3.16)
+project(task_ui)
 
 find_package(ament_cmake REQUIRED)
 
@@ -27,18 +27,18 @@ include_directories(include)
 add_executable(trac_ik_test src/trac_ik_test.cpp)
 ament_target_dependencies(trac_ik_test ${DEPS})
 
-add_library(jose src/jose.cpp)
-ament_target_dependencies(jose ${DEPS})
+add_library(task_ui src/task_ui.cpp)
+ament_target_dependencies(task_ui ${DEPS})
 
-#add_executable(jose_test src/jose_test.cpp)
-#target_link_libraries(jose_test jose ${catkin_LIBRARIES})
+#add_executable(task_ui_test src/task_ui_test.cpp)
+#target_link_libraries(task_ui_test task_ui ${catkin_LIBRARIES})
 
-add_library(jose_markers src/jose_markers.cpp)
-target_link_libraries(jose_markers jose)
-ament_target_dependencies(jose_markers ${DEPS})
+add_library(task_ui_markers src/task_ui_markers.cpp)
+target_link_libraries(task_ui_markers task_ui)
+ament_target_dependencies(task_ui_markers ${DEPS})
 
-add_executable(jose_markers_node src/jose_markers_node.cpp)
-target_link_libraries(jose_markers_node jose_markers)
+add_executable(task_ui_markers_node src/task_ui_markers_node.cpp)
+target_link_libraries(task_ui_markers_node task_ui_markers)
 
 add_library(robot_to_task_markers src/robot_to_task_markers.cpp)
 #target_link_libraries(robot_to_task_markers )
@@ -54,9 +54,9 @@ install(DIRECTORY launch meshes
 
 install(
   TARGETS ${PROJECT_NAME} 
-  jose_markers 
-  jose_markers_node
-  robot_to_task_markers
+  task_ui_markers 
+  task_ui_markers_node
+  task_ui_to_task_markers
   robot_to_task_markers_node 
   trac_ik_test
   ARCHIVE DESTINATION lib

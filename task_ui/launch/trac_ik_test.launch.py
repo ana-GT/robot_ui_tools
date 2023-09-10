@@ -16,7 +16,7 @@ def generate_launch_description():
         camera_model=True,
         default_laser_model="sick-571")
 
-    trac_ik_test = Node(package='jose',
+    trac_ik_test = Node(package='task_ui',
                         executable='trac_ik_test',
                         output='screen',
                         parameters=[parameters])

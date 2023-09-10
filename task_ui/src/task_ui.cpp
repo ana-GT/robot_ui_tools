@@ -1,13 +1,20 @@
-#include <jose/jose.h>
+/**
+ * @file task_ui.cpp
+ */
+#include <task_ui/task_ui.h>
 #include <tf2/time.h>
 
-Jose::Jose()
+/**
+ * @function TaskUi
+ * @brief Constructor
+ */
+TaskUi::TaskUi()
 {}
 
 /**
  * @function init
  */
-void Jose::init(rclcpp::Node::SharedPtr _nh,
+void TaskUi::init(rclcpp::Node::SharedPtr _nh,
 		std::string _group)
 {
   nh_ = _nh;
@@ -63,14 +70,17 @@ void Jose::init(rclcpp::Node::SharedPtr _nh,
     }
   }
   
-  printf("\t * Init jose. Found: %d  \n", found);
+  printf("\t * Init TaskUi. Found: %d  \n", found);
   
   trac_ik_.reset( new TRAC_IK::TRAC_IK(nh_, group_base_link_, group_tip_link_,
 				       urdf_param) );
 		  
 }
 
-void Jose::getJointNames()
+/**
+ * @function getJointNames
+ */
+void TaskUi::getJointNames()
 {
   joints_.clear();
 
@@ -102,7 +112,10 @@ void Jose::getJointNames()
   return;
 }
 
-bool Jose::getIK(Eigen::Vector3d _pos,
+/**
+ * @function getIK
+ */
+bool TaskUi::getIK(Eigen::Vector3d _pos,
 		 Eigen::Quaterniond _rot,
 		 std::vector<double> &_joints,
 		 KDL::Twist _bounds)
@@ -130,14 +143,19 @@ bool Jose::getIK(Eigen::Vector3d _pos,
   return false;
 }
 
-
-bool Jose::getFK(std::vector<double> _joints,
+/**
+ * @function getFK
+ */
+bool TaskUi::getFK(std::vector<double> _joints,
 		 Eigen::Isometry3d &_pose)
 {
   return true;
 }
 
-KDL::JntArray Jose::getMidJoint()
+/**
+ * @function getMidJoint
+ */
+KDL::JntArray TaskUi::getMidJoint()
 {
   KDL::JntArray lb, ub, mid;
   trac_ik_->getKDLLimits(lb, ub);
@@ -151,7 +169,10 @@ KDL::JntArray Jose::getMidJoint()
   return mid;
 }
 
-bool Jose::getMsg(const std::vector<double> &_joint_vals,
+/**
+ * @function getMsg
+ */
+bool TaskUi::getMsg(const std::vector<double> &_joint_vals,
 		  sensor_msgs::msg::JointState &_msg)
 {
   if(_joint_vals.size() != joints_.size())

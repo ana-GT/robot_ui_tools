@@ -2,16 +2,17 @@
  * @file task_ui_markers.cpp
  */
 
-#include <task_ui/robot_to_task_markers.h>
+#include <task_ui/robot_task_markers.h>
+
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 /**
- * @function TaskUiMarkers
+ * @function RobotTaskMarkers
  * @brief Constructor
  */
-TaskUiMarkers::TaskUiMarkers(rclcpp::Node::SharedPtr _nh) :
+RobotTaskMarkers::RobotTaskMarkers(rclcpp::Node::SharedPtr _nh) :
   nh_(_nh)
 {
   server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/task_marker",
@@ -23,37 +24,79 @@ TaskUiMarkers::TaskUiMarkers(rclcpp::Node::SharedPtr _nh) :
 
 }
 
-void TaskUiMarkers::stop()
+void RobotTaskMarkers::stop()
 {
   server_.reset();
 }
 
-void TaskUiMarkers::init(std::string _group)
+/**
+ * @function init
+ */
+void RobotTaskMarkers::init(std::string _chain_group)
 {
   client_ = nh_->create_client<reachability_msgs::srv::MoveRobotToTask>("robot_to_task");
+  client_move_base_ = nh_->create_client<reachability_msgs::srv::SetRobotPose>("set_robot_pose");
+  pub_js_ = nh_->create_publisher<sensor_msgs::msg::JointState>("joint_state_command", 10);
 
-  //ros::Duration(0.1).sleep();
+  timer_ = nh_->create_wall_timer(std::chrono::milliseconds(200), std::bind(&RobotTaskMarkers::timer_cb, this));
+  wait_for_result_ = false;
 
-  menu_handler_.insert( "Get Robot pose", std::bind(&JoseMarkers::processFeedback, this, _1));
+  // Load
+  std::string param_prefix = "robot_task_ui_params." + _chain_group;
+
+  std::shared_ptr<robot_task_ui_params::ParamListener> param_listener;
+  param_listener = std::make_shared<robot_task_ui_params::ParamListener>(nh_, param_prefix);
+  params_ = param_listener->get_params();
+
+
+  menu_handler_.insert( "Get Robot pose", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
-  menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
-  menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&JoseMarkers::processFeedback, this, _1));
+  menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
+  menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
 
-  tf2::Vector3 position;
-  std::string frame_id = "world"; 
-  
-  position = tf2::Vector3( 0, 0, 0);
+  // Pose
+  std::string frame_id = params_.reference_frame; 
+  geometry_msgs::msg::Pose marker_pose;
+  doubleArrayToPose(params_.object_start_pose, marker_pose);  
+
   make6DofMarker( false, visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D,
-		  position, true, frame_id );
+		  marker_pose, true, frame_id );
+  updatePose(goal_pose_, marker_pose, frame_id);
 
   server_->applyChanges();
 
 }
 
 /**
+ * @function doubleArrayToPose
+ */
+bool RobotTaskMarkers::doubleArrayToPose(const std::vector<double> &_arr, 
+                                      geometry_msgs::msg::Pose &_pose)
+{
+  if(_arr.size() != 6)
+  {
+    _pose.position.x = 0; _pose.position.y = 0; _pose.position.z = 0;
+    _pose.orientation.x = 0; _pose.orientation.y = 0; _pose.orientation.z = 0; _pose.orientation.w = 1.0;
+    return false;
+  }  
+
+  Eigen::Quaterniond q;
+  q = Eigen::AngleAxisd(_arr[5], Eigen::Vector3d(0,0,1))*
+      Eigen::AngleAxisd(_arr[4], Eigen::Vector3d(0,1,0))*
+      Eigen::AngleAxisd(_arr[3], Eigen::Vector3d(1,0,0));
+  q.normalize();
+  
+  _pose.position.x = _arr[0]; _pose.position.y = _arr[1]; _pose.position.z = _arr[2]; 
+  _pose.orientation.x = q.x(); _pose.orientation.y = q.y(); 
+  _pose.orientation.z = q.z(); _pose.orientation.w = q.w();
+
+  return true;
+}
+
+/**
  * @function makeBox
  */
-visualization_msgs::msg::Marker TaskUiMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::Marker RobotTaskMarkers::makeBox( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
 
@@ -70,14 +113,13 @@ visualization_msgs::msg::Marker TaskUiMarkers::makeBox( visualization_msgs::msg:
 }
 
 /**
- * @function makeBottle
+ * @function makeMeshMarker
  */
-visualization_msgs::msg::Marker TaskUiMarkers::makeBottle(visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::Marker RobotTaskMarkers::makeMeshMarker(visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::Marker marker;
-  RCLCPP_WARN(nh_->get_logger(), "Make bottle...");
   marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-  marker.mesh_resource = "package://task_ui/meshes/wine_bottle_reference.dae";
+  marker.mesh_resource = params_.object_mesh;
   marker.mesh_use_embedded_materials = true;
   marker.scale.x =1.0; //msg.scale * 0.4;
   marker.scale.y = 1.0; //msg.scale * 0.4;
@@ -91,13 +133,13 @@ visualization_msgs::msg::Marker TaskUiMarkers::makeBottle(visualization_msgs::ms
 }
 
 /**
- * @functino makeBoxControl
+ * @function makeBoxControl
  */
-visualization_msgs::msg::InteractiveMarkerControl& TaskUiMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::InteractiveMarkerControl& RobotTaskMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::InteractiveMarkerControl control;
   control.always_visible = true;
-  control.markers.push_back( this->makeBottle(msg) ); // makeBox
+  control.markers.push_back( this->makeMeshMarker(msg) ); // makeBox
   msg.controls.push_back( control );
 
   return msg.controls.back();
@@ -105,7 +147,7 @@ visualization_msgs::msg::InteractiveMarkerControl& TaskUiMarkers::makeBoxControl
 
 
 // %Tag(processFeedback)%
-void TaskUiMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   std::ostringstream s;
   s << "* Feedback from marker '" << feedback->marker_name;
@@ -126,11 +168,9 @@ void TaskUiMarkers::processFeedback( const visualization_msgs::msg::InteractiveM
       RCLCPP_INFO_STREAM( nh_->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked");      
 
        auto request = std::make_shared<reachability_msgs::srv::MoveRobotToTask::Request>();
-      RCLCPP_INFO( nh_->get_logger(), "Send request to move to tcp pose: %f %f %f", 
-          goal_pose_.pose.position.x, goal_pose_.pose.position.y, goal_pose_.pose.position.z);
 
        request->tcp_poses.push_back(goal_pose_);
-
+       request->num_robot_placements = params_.num_robot_placements;
       while (!client_->wait_for_service(1s)) {
       
         if (!rclcpp::ok()) {
@@ -140,15 +180,15 @@ void TaskUiMarkers::processFeedback( const visualization_msgs::msg::InteractiveM
         RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
       }
 
-      auto result = client_->async_send_request(request);
+      client_result_ = client_->async_send_request(request);
+      wait_for_result_ = true;
      // Do not wait for result or crash. No nested wait spinning
     }
     break;
 
   case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
     {
-      goal_pose_.pose = feedback->pose;
-      goal_pose_.header = feedback->header;
+      updatePose(goal_pose_, feedback->pose, feedback->header);
     }
     break;
 
@@ -157,10 +197,30 @@ void TaskUiMarkers::processFeedback( const visualization_msgs::msg::InteractiveM
   server_->applyChanges();
 }
 
+
+/**
+ * @function updatePose
+ */
+void RobotTaskMarkers::updatePose(geometry_msgs::msg::PoseStamped &_pose, 
+                  const geometry_msgs::msg::Pose &_pos, 
+                  const std_msgs::msg::Header &_hed)
+{
+  _pose.pose = _pos;
+  _pose.header = _hed;
+}
+
+void RobotTaskMarkers::updatePose(geometry_msgs::msg::PoseStamped &_pose, 
+                  const geometry_msgs::msg::Pose &_pos, 
+                  const std::string &_frame_id)
+{
+  _pose.pose = _pos;
+  _pose.header.frame_id = _frame_id;
+}
+
 /**
  * @function alignMarker
  */
-void TaskUiMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void RobotTaskMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   geometry_msgs::msg::Pose pose = feedback->pose;
 
@@ -184,21 +244,20 @@ void TaskUiMarkers::alignMarker( const visualization_msgs::msg::InteractiveMarke
 /**
  * @function make6DofMarkers
  */
-void TaskUiMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
-				  const tf2::Vector3& position, bool show_6dof,
-				  std::string frame_id)
+void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
+				                            const geometry_msgs::msg::Pose &_pose, 
+                                    bool show_6dof,
+				                            std::string _frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
-  int_marker.header.frame_id = frame_id;
-  int_marker.pose.position.x = position.getX();
-  int_marker.pose.position.y = position.getY();
-  int_marker.pose.position.z = position.getZ();  
+  int_marker.header.frame_id = _frame_id;
+  int_marker.pose = _pose;  
   int_marker.scale = 0.4;
 
   int_marker.name = "goal";
-  int_marker.description = "6dof goal";
+  int_marker.description = "6-dof goal";
 
-  // insert a box
+  // insert a marker
   makeBoxControl(int_marker);
   int_marker.controls[0].interaction_mode = interaction_mode;
 
@@ -258,7 +317,7 @@ void TaskUiMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
   }
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
   if (interaction_mode != visualization_msgs::msg::InteractiveMarkerControl::NONE)
     menu_handler_.apply( *server_, int_marker.name );
 }
@@ -267,7 +326,7 @@ void TaskUiMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 /**
  * @function makeMenuMarker
  */
-void TaskUiMarkers::makeMenuMarker( const tf2::Vector3& position,
+void RobotTaskMarkers::makeMenuMarker( const tf2::Vector3& position,
 				  std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -291,14 +350,14 @@ void TaskUiMarkers::makeMenuMarker( const tf2::Vector3& position,
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback,this,_1));
+  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback,this,_1));
   menu_handler_.apply( *server_, int_marker.name );
 }
 
 /**
  * @function makeButtonMarker
  */
-void TaskUiMarkers::makeButtonMarker( const tf2::Vector3& position,
+void RobotTaskMarkers::makeButtonMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -322,13 +381,13 @@ void TaskUiMarkers::makeButtonMarker( const tf2::Vector3& position,
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
 }
 
 /**
  * @function makeMovingMarker
  */
-void TaskUiMarkers::makeMovingMarker( const tf2::Vector3& position,
+void RobotTaskMarkers::makeMovingMarker( const tf2::Vector3& position,
 				    std::string frame_id)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
@@ -354,12 +413,68 @@ void TaskUiMarkers::makeMovingMarker( const tf2::Vector3& position,
   int_marker.controls.push_back(control);
 
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
 }
 
   
-void TaskUiMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
+void RobotTaskMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker int_marker )
 {
   server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&JoseMarkers::processFeedback, this, _1));
+  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
+}
+
+/**
+ * @function moveBase 
+ */
+void RobotTaskMarkers::moveBase(const geometry_msgs::msg::PoseStamped &_pose)
+{
+  auto request = std::make_shared<reachability_msgs::srv::SetRobotPose::Request>();
+  request->pose = _pose;
+
+  while (!client_move_base_->wait_for_service(1s)) {
+      
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+      return;
+    }
+    RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
+  }
+
+  auto result = client_move_base_->async_send_request(request);
+}
+
+/**
+ * @function showSolution
+ */
+void RobotTaskMarkers::showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg)
+{
+    // Move base
+    moveBase(_msg.base_pose);
+    // Update arm pose
+    pub_js_->publish(_msg.chain_config);
+
+}
+
+/**
+ * @function timer_cb
+ */
+void RobotTaskMarkers::timer_cb()
+{
+  if(!wait_for_result_)
+    return;
+
+  if(client_result_.valid())
+  {
+    wait_for_result_ = false;  
+
+    auto result = client_result_.get();
+    RCLCPP_INFO(nh_->get_logger(), "Showing %d solutions", result->solutions.size());
+    for(auto si : result->solutions)
+    {
+      showSolution(si);
+      usleep(1.0*1e6);
+    }
+
+  }
+
 }

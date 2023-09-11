@@ -1,7 +1,7 @@
 /**
- * @file robot_to_task_markers_node.cpp
+ * @file robot_task_markers_node.cpp
  */
-#include <task_ui/robot_to_task_markers.h>
+#include <task_ui/robot_task_markers.h>
 
 
 int main(int argc, char* argv[])
@@ -19,11 +19,11 @@ int main(int argc, char* argv[])
   }
   RCLCPP_WARN(node->get_logger(), "group parameter: %s \n", group.c_str() );
   
-  JoseMarkers jm(node);
-  jm.init(group);
+  RobotTaskMarkers rtm(node);
+  rtm.init(group);
   
   rclcpp::spin(node);
-  jm.stop();
+  rtm.stop();
   rclcpp::shutdown();
 }
 

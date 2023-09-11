@@ -21,6 +21,7 @@
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>reachability_msgs</depend>
+  <depend>generate_parameter_library</depend>
   
   <export>
     <build_type>ament_cmake</build_type>

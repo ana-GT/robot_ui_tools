@@ -70,6 +70,7 @@ protected:
                   const std::string &_frame_id);                                       
 
   void timer_cb();
+  void client_cb(rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedFuture _future);
 
   // To simulate motion
   void showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg);  

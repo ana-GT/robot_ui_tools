@@ -39,6 +39,142 @@
         <joint name="gripper_left_finger_joint" />
         <joint name="gripper_right_finger_joint" />
     </group>
+
+    <group_state name="pose_right_0_down" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="0.22"/>
+        <joint name="arm_2_joint" value="0.08"/>
+        <joint name="arm_3_joint" value="-1.53"/>
+        <joint name="arm_4_joint" value="0.453"/>
+        <joint name="arm_5_joint" value="-1.38"/>
+        <joint name="arm_6_joint" value="1.06"/>
+        <joint name="arm_7_joint" value="1.47"/>
+    </group_state>
+
+    <group_state name="pose_right_1_down" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="0.27"/>
+        <joint name="arm_2_joint" value="0.04"/>
+        <joint name="arm_3_joint" value="-1.53"/>
+        <joint name="arm_4_joint" value="1.821"/>
+        <joint name="arm_5_joint" value="-1.47"/>
+        <joint name="arm_6_joint" value="0.188"/>
+        <joint name="arm_7_joint" value="1.47"/>
+    </group_state>
+
+    <group_state name="pose_right_0_up" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="0.267"/>
+        <joint name="arm_2_joint" value="0.667"/>
+        <joint name="arm_3_joint" value="-1.371"/>
+        <joint name="arm_4_joint" value="0.312"/>
+        <joint name="arm_5_joint" value="-0.931"/>
+        <joint name="arm_6_joint" value="0.896"/>
+        <joint name="arm_7_joint" value="1.828"/>
+    </group_state>
+
+    <group_state name="pose_right_1_up" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="0.860"/>
+        <joint name="arm_2_joint" value="0.789"/>
+        <joint name="arm_3_joint" value="-1.022"/>
+        <joint name="arm_4_joint" value="0.368"/>
+        <joint name="arm_5_joint" value="-0.886"/>
+        <joint name="arm_6_joint" value="0.731"/>
+        <joint name="arm_7_joint" value="1.873"/>
+    </group_state>
+
+    <group_state name="pose_right_0_high" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.30" />
+        <joint name="arm_1_joint" value="0.267"/>
+        <joint name="arm_2_joint" value="0.667"/>
+        <joint name="arm_3_joint" value="-1.371"/>
+        <joint name="arm_4_joint" value="0.312"/>
+        <joint name="arm_5_joint" value="-0.931"/>
+        <joint name="arm_6_joint" value="0.896"/>
+        <joint name="arm_7_joint" value="1.828"/>
+    </group_state>
+
+    <group_state name="pose_right_1_high" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.30" />
+        <joint name="arm_1_joint" value="0.860"/>
+        <joint name="arm_2_joint" value="0.789"/>
+        <joint name="arm_3_joint" value="-1.022"/>
+        <joint name="arm_4_joint" value="0.368"/>
+        <joint name="arm_5_joint" value="-0.886"/>
+        <joint name="arm_6_joint" value="0.731"/>
+        <joint name="arm_7_joint" value="1.873"/>
+    </group_state>
+
+    <!-- Left -->
+    <group_state name="pose_left_0_down" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="2.47"/>
+        <joint name="arm_2_joint" value="-0.042"/>
+        <joint name="arm_3_joint" value="1.286"/>
+        <joint name="arm_4_joint" value="0.79"/>
+        <joint name="arm_5_joint" value="-0.034"/>
+        <joint name="arm_6_joint" value="-0.143"/>
+        <joint name="arm_7_joint" value="0.101"/>
+    </group_state>
+
+    <group_state name="pose_left_1_down" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="2.27"/>
+        <joint name="arm_2_joint" value="0.053"/>
+        <joint name="arm_3_joint" value="1.125"/>
+        <joint name="arm_4_joint" value="1.158"/>
+        <joint name="arm_5_joint" value="1.2"/>
+        <joint name="arm_6_joint" value="-0.957"/>
+        <joint name="arm_7_joint" value="1.74"/>
+    </group_state>
+
+    <group_state name="pose_left_0_up" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="2.45"/>
+        <joint name="arm_2_joint" value="0.83"/>
+        <joint name="arm_3_joint" value="1.018"/>
+        <joint name="arm_4_joint" value="0.2"/>
+        <joint name="arm_5_joint" value="0.819"/>
+        <joint name="arm_6_joint" value="-0.567"/>
+        <joint name="arm_7_joint" value="1.245"/>
+    </group_state>
+
+    <group_state name="pose_left_1_up" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="arm_1_joint" value="2.06"/>
+        <joint name="arm_2_joint" value="0.830"/>
+        <joint name="arm_3_joint" value="1.313"/>
+        <joint name="arm_4_joint" value="0.622"/>
+        <joint name="arm_5_joint" value="1.491"/>
+        <joint name="arm_6_joint" value="-0.234"/>
+        <joint name="arm_7_joint" value="0.886"/>
+    </group_state>
+
+    <group_state name="pose_left_0_high" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.30" />
+        <joint name="arm_1_joint" value="2.47"/>
+        <joint name="arm_2_joint" value="-0.042"/>
+        <joint name="arm_3_joint" value="1.286"/>
+        <joint name="arm_4_joint" value="0.79"/>
+        <joint name="arm_5_joint" value="-0.034"/>
+        <joint name="arm_6_joint" value="-0.143"/>
+        <joint name="arm_7_joint" value="0.101"/>
+    </group_state>
+
+    <group_state name="pose_left_1_high" group="arm_torso">
+        <joint name="torso_lift_joint" value="0.30" />
+        <joint name="arm_1_joint" value="2.27"/>
+        <joint name="arm_2_joint" value="0.053"/>
+        <joint name="arm_3_joint" value="1.125"/>
+        <joint name="arm_4_joint" value="1.158"/>
+        <joint name="arm_5_joint" value="1.2"/>
+        <joint name="arm_6_joint" value="-0.957"/>
+        <joint name="arm_7_joint" value="1.74"/>
+    </group_state>
+
+
+
     <!--END EFFECTOR= Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="arm_tool_link" group="gripper" parent_group="arm_torso" />
 

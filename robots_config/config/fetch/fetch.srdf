@@ -31,6 +31,140 @@
         <link name="l_gripper_finger_link" />
         <link name="r_gripper_finger_link" />
     </group>
+
+
+    <group_state name="pose_right_0_down" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="-1.0"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="1.50" />
+        <joint name="elbow_flex_joint" value="0.72" />
+        <joint name="forearm_roll_joint" value="0.0" />
+        <joint name="wrist_flex_joint" value="1.2" />
+        <joint name="wrist_roll_joint" value="0.0" />
+    </group_state>
+
+    <group_state name="pose_right_1_down" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="-1.0"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="1.50" />
+        <joint name="elbow_flex_joint" value="1.62" />
+        <joint name="forearm_roll_joint" value="0.0" />
+        <joint name="wrist_flex_joint" value="1.0" />
+        <joint name="wrist_roll_joint" value="0.0" />
+    </group_state>
+
+    <group_state name="pose_right_0_up" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="-1.41"/>
+        <joint name="shoulder_lift_joint" value="-0.85" />
+        <joint name="upperarm_roll_joint" value="1.58" />
+        <joint name="elbow_flex_joint" value="1.30" />
+        <joint name="forearm_roll_joint" value="1.92" />
+        <joint name="wrist_flex_joint" value="0.03" />
+        <joint name="wrist_roll_joint" value="0.80" />
+    </group_state>
+
+    <group_state name="pose_right_1_up" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="-1.29"/>
+        <joint name="shoulder_lift_joint" value="-0.94" />
+        <joint name="upperarm_roll_joint" value="1.95" />
+        <joint name="elbow_flex_joint" value="1.45" />
+        <joint name="forearm_roll_joint" value="0.66" />
+        <joint name="wrist_flex_joint" value="0.32" />
+        <joint name="wrist_roll_joint" value="1.78" />
+    </group_state>
+
+    <group_state name="pose_right_0_high" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.3" />
+        <joint name="shoulder_pan_joint" value="-1.0"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="1.50" />
+        <joint name="elbow_flex_joint" value="0.72" />
+        <joint name="forearm_roll_joint" value="0.0" />
+        <joint name="wrist_flex_joint" value="1.2" />
+        <joint name="wrist_roll_joint" value="0.0" />
+    </group_state>
+
+    <group_state name="pose_right_1_high" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.3" />
+        <joint name="shoulder_pan_joint" value="-1.0"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="1.50" />
+        <joint name="elbow_flex_joint" value="1.62" />
+        <joint name="forearm_roll_joint" value="0.0" />
+        <joint name="wrist_flex_joint" value="1.0" />
+        <joint name="wrist_roll_joint" value="0.0" />
+    </group_state>
+
+    <group_state name="pose_left_0_down" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="1.48"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="-1.61" />
+        <joint name="elbow_flex_joint" value="0.84" />
+        <joint name="forearm_roll_joint" value="0.08" />
+        <joint name="wrist_flex_joint" value="0.50" />
+        <joint name="wrist_roll_joint" value="-1.58" />
+    </group_state>
+
+    <group_state name="pose_left_1_down" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="1.26"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="-1.55" />
+        <joint name="elbow_flex_joint" value="1.93" />
+        <joint name="forearm_roll_joint" value="0.15" />
+        <joint name="wrist_flex_joint" value="0.92" />
+        <joint name="wrist_roll_joint" value="0.0" />
+    </group_state>
+
+    <group_state name="pose_left_0_up" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="1.35"/>
+        <joint name="shoulder_lift_joint" value="-0.36" />
+        <joint name="upperarm_roll_joint" value="-2.90" />
+        <joint name="elbow_flex_joint" value="0.90" />
+        <joint name="forearm_roll_joint" value="1.61" />
+        <joint name="wrist_flex_joint" value="1.34" />
+        <joint name="wrist_roll_joint" value="0.29" />
+    </group_state>
+
+    <group_state name="pose_left_1_up" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.0" />
+        <joint name="shoulder_pan_joint" value="1.38"/>
+        <joint name="shoulder_lift_joint" value="-0.36" />
+        <joint name="upperarm_roll_joint" value="-2.56" />
+        <joint name="elbow_flex_joint" value="1.50" />
+        <joint name="forearm_roll_joint" value="0.22" />
+        <joint name="wrist_flex_joint" value="0.88" />
+        <joint name="wrist_roll_joint" value="0.29" />
+    </group_state>
+
+    <group_state name="pose_left_0_high" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.3" />
+        <joint name="shoulder_pan_joint" value="1.48"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="-1.61" />
+        <joint name="elbow_flex_joint" value="0.84" />
+        <joint name="forearm_roll_joint" value="0.08" />
+        <joint name="wrist_flex_joint" value="0.50" />
+        <joint name="wrist_roll_joint" value="-1.58" />
+    </group_state>
+
+    <group_state name="pose_left_1_high" group="arm_with_torso">
+        <joint name="torso_lift_joint" value="0.3" />
+        <joint name="shoulder_pan_joint" value="1.26"/>
+        <joint name="shoulder_lift_joint" value="0.0" />
+        <joint name="upperarm_roll_joint" value="-1.55" />
+        <joint name="elbow_flex_joint" value="1.93" />
+        <joint name="forearm_roll_joint" value="0.15" />
+        <joint name="wrist_flex_joint" value="0.92" />
+        <joint name="wrist_roll_joint" value="0.0" />
+    </group_state>
+
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="wrist_roll_link" group="gripper" />
     <!--DISABLE COLLISIONS:  -->

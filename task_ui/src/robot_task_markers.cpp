@@ -38,7 +38,7 @@ void RobotTaskMarkers::init(std::string _chain_group)
   client_move_base_ = nh_->create_client<reachability_msgs::srv::SetRobotPose>("set_robot_pose");
   pub_js_ = nh_->create_publisher<sensor_msgs::msg::JointState>("joint_state_command", 10);
 
-  timer_ = nh_->create_wall_timer(std::chrono::milliseconds(200), std::bind(&RobotTaskMarkers::timer_cb, this));
+  //timer_ = nh_->create_wall_timer(std::chrono::milliseconds(200), std::bind(&RobotTaskMarkers::timer_cb, this));
   wait_for_result_ = false;
 
   // Load
@@ -177,11 +177,12 @@ void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::Interacti
           RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
           return;
         }
-        RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
+        RCLCPP_WARN(nh_->get_logger(), "service not available, waiting again...");
       }
-
-      client_result_ = client_->async_send_request(request);
-      wait_for_result_ = true;
+    
+      RCLCPP_INFO(nh_->get_logger(), "Sending request for manipulation task plan");
+      auto result = client_->async_send_request(request, 
+                       std::bind(&RobotTaskMarkers::client_cb, this, std::placeholders::_1));
      // Do not wait for result or crash. No nested wait spinning
     }
     break;
@@ -197,6 +198,26 @@ void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::Interacti
   server_->applyChanges();
 }
 
+void RobotTaskMarkers::client_cb(rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedFuture _future)
+{
+  auto status = _future.wait_for(1s);
+  if (status == std::future_status::ready)
+  {
+      RCLCPP_INFO(nh_->get_logger(), "Status is ready?");
+      auto response = _future.get();
+      RCLCPP_INFO(nh_->get_logger(), "Got response with %lu solutions", response->solutions.size());
+
+    RCLCPP_INFO(nh_->get_logger(), "Showing %ld solutions", response->solutions.size());
+    for(auto si : response->solutions)
+    {
+      showSolution(si);
+      usleep(1.0*1e6);
+    }
+
+  }
+      
+      
+}
 
 /**
  * @function updatePose
@@ -460,15 +481,16 @@ void RobotTaskMarkers::showSolution(reachability_msgs::msg::PlaceRobotSolution &
  */
 void RobotTaskMarkers::timer_cb()
 {
+   RCLCPP_INFO(nh_->get_logger(), "Timer check...");
   if(!wait_for_result_)
     return;
 
   if(client_result_.valid())
   {
     wait_for_result_ = false;  
-
+ 
     auto result = client_result_.get();
-    RCLCPP_INFO(nh_->get_logger(), "Showing %d solutions", result->solutions.size());
+    RCLCPP_INFO(nh_->get_logger(), "Timer got valid result. Showing %ld solutions", result->solutions.size());
     for(auto si : result->solutions)
     {
       showSolution(si);

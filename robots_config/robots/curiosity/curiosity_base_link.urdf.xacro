@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot name="curiosity" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--Import the original Panda -->
+  <!-- Changes w.r.t original: base_footprint joint is changed so it points forward and it
+  is level to floor -->
+  <xacro:include filename="$(find robots_config)/robots/curiosity/curiosity_mars_rover.xacro.urdf"/>
+
+  <!-- TCP link-->
+  <link name="tcp_link" />
+  <joint name="tcp_joint" type="fixed">
+      <origin rpy="-1.5708 0.0 1.5708" xyz="-0.25 0.0 0.15"/>
+      <parent link="arm_tools"/>
+      <child link="tcp_link"/>
+  </joint>
+
+
+</robot>

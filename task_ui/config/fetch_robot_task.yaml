@@ -3,5 +3,5 @@ arm_with_torso:
   num_task_poses: 2
   reference_frame: "world"
 
-  num_robot_placements: 4 
+  num_robot_placements: 10 
 

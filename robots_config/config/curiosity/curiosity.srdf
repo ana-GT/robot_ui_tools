@@ -1,0 +1,134 @@
+<?xml version="1.0" ?>
+<robot name="curiosity">
+
+    <group name="arm">
+        <chain base_link="base_footprint" tip_link="arm_tools" />
+    </group>
+
+    <group_state name="pose_right_0_down" group="arm">
+        <joint name="arm_01_joint" value="-0.806" />
+        <joint name="arm_02_joint" value="-0.229" />
+        <joint name="arm_03_joint" value="2.514" />
+        <joint name="arm_04_joint" value="0.586" />    
+        <joint name="arm_tools_joint" value="0.221" />                        
+    </group_state>
+
+    <group_state name="pose_right_0_up" group="arm">
+        <joint name="arm_01_joint" value="-1.20" />
+        <joint name="arm_02_joint" value="-0.993" />
+        <joint name="arm_03_joint" value="2.189" />
+        <joint name="arm_04_joint" value="1.349" />    
+        <joint name="arm_tools_joint" value="0.764" />                        
+    </group_state>
+
+    <group_state name="pose_left_0_down" group="arm">
+        <joint name="arm_01_joint" value="1.08" />
+        <joint name="arm_02_joint" value="-0.144" />
+        <joint name="arm_03_joint" value="2.351" />
+        <joint name="arm_04_joint" value="0.636" />    
+        <joint name="arm_tools_joint" value="0.085" />                        
+    </group_state>
+
+    <group_state name="pose_left_0_up" group="arm">
+        <joint name="arm_01_joint" value="1.40" />
+        <joint name="arm_02_joint" value="-0.925" />
+        <joint name="arm_03_joint" value="2.135" />
+        <joint name="arm_04_joint" value="1.044" />    
+        <joint name="arm_tools_joint" value="-0.764" />                        
+    </group_state>
+
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <!--<end_effector name="gripper" parent_link="wrist_roll_link" group="gripper" />-->
+
+    <!--DISABLE COLLISIONS:  -->
+    <!--<disable_collisions link1="base_link" link2="bellows_link" reason="Default" />-->
+
+<disable_collisions link1="suspension_steer_B_R" link2="back_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R_to_suspension_steer_B_R" link2="back_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_steer_B_R" link2="suspension_arm_B2_R" reason="Default" /> 
+<disable_collisions link1="middle_wheel_R" link2="suspension_arm_F_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_R_to_B2_R" link2="middle_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_R" link2="middle_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_R" link2="suspension_arm_F_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R" link2="suspension_arm_B_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R" link2="middle_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R" link2="right_axis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_L_to_B2_L" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_L" link2="suspension_arm_B_L" reason="Default" /> 
+<disable_collisions link1="suspension_steer_B_L" link2="suspension_arm_B2_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_steer_B_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_B2_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_B_L" reason="Default" /> 
+<disable_collisions link1="left_axis" link2="suspension_arm_B2_L" reason="Default" /> 
+<disable_collisions link1="back_wheel_L" link2="suspension_arm_B2_L_to_suspension_steer_B_L" reason="Default" /> 
+<disable_collisions link1="middle_wheel_L" link2="suspension_arm_F_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_L_to_B2_L" link2="middle_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_steer_B_L_to_back_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="back_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_B2_L_to_suspension_steer_B_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="middle_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_B2_L_to_middle_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_F_L" reason="Default" /> 
+<disable_collisions link1="suspension_steer_B_L" link2="back_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_L" link2="suspension_steer_B_L_to_back_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_L" link2="back_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_L" link2="middle_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_L" link2="middle_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_L" link2="suspension_arm_F_L" reason="Default" /> 
+<disable_collisions link1="suspension_steer_B_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R_to_suspension_steer_B_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_steer_B_R_to_back_wheel_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="back_wheel_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B2_R_to_middle_wheel_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_R_to_B2_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_B_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="middle_wheel_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_R" link2="chassis" reason="Default" /> 
+<disable_collisions link1="front_wheel_R" link2="suspension_steer_F_R" reason="Default" /> 
+<disable_collisions link1="front_wheel_R" link2="suspension_arm_F_R_to_suspension_steer_F_R" reason="Default" /> 
+<disable_collisions link1="mast_02" link2="mast_cameras" reason="Default" /> 
+<disable_collisions link1="mast_p_to_mast_02" link2="mast_cameras" reason="Default" /> 
+<disable_collisions link1="mast_p" link2="mast_02" reason="Default" /> 
+<disable_collisions link1="mast_p" link2="mast_cameras" reason="Default" /> 
+<disable_collisions link1="arm_02" link2="suspension_steer_F_L" reason="Default" /> 
+<disable_collisions link1="arm_01" link2="arm_02" reason="Default" /> 
+<disable_collisions link1="arm_01" link2="suspension_steer_F_L" reason="Default" /> 
+<disable_collisions link1="front_wheel_L" link2="suspension_arm_F_L_to_suspension_steer_F_L" reason="Default" /> 
+<disable_collisions link1="arm_01" link2="front_wheel_L" reason="Default" /> 
+<disable_collisions link1="arm_02" link2="front_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_steer_F_L" link2="front_wheel_L" reason="Default" /> 
+<disable_collisions link1="arm_04" link2="arm_03" reason="Default" /> 
+<disable_collisions link1="arm_tools" link2="arm_04" reason="Default" /> 
+<disable_collisions link1="arm_tools" link2="arm_03_to_arm_04" reason="Default" /> 
+<disable_collisions link1="arm_tools" link2="arm_03" reason="Default" /> 
+<disable_collisions link1="arm_04_to_arm_tools" link2="arm_03" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_R" link2="suspension_steer_F_R_to_front_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_R" link2="front_wheel_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_R" link2="suspension_steer_F_R" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_R" link2="chassis_to_mast_p" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_R" link2="mast_p" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_steer_F_R_to_front_wheel_R" reason="Default" /> 
+<disable_collisions link1="chassis" link2="front_wheel_R" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_steer_F_R" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_F_R_to_suspension_steer_F_R" reason="Default" /> 
+<disable_collisions link1="chassis" link2="mast_p" reason="Default" /> 
+<disable_collisions link1="chassis" link2="mast_p_to_mast_02" reason="Default" /> 
+<disable_collisions link1="chassis" link2="mast_02" reason="Default" /> 
+<disable_collisions link1="chassis" link2="mast_cameras" reason="Default" /> 
+<disable_collisions link1="chassis" link2="mast_02_to_mast_cameras" reason="Default" /> 
+<disable_collisions link1="chassis" link2="arm_01" reason="Default" /> 
+<disable_collisions link1="chassis" link2="arm_02" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_steer_F_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="front_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_steer_F_L_to_front_wheel_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="suspension_arm_F_L_to_suspension_steer_F_L" reason="Default" /> 
+<disable_collisions link1="chassis" link2="arm_01_to_arm_02" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_L" link2="arm_01" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_L" link2="arm_02" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_L" link2="suspension_steer_F_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_L" link2="front_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_L" link2="suspension_steer_F_L_to_front_wheel_L" reason="Default" /> 
+<disable_collisions link1="suspension_arm_F_L" link2="chassis_to_arm_01" reason="Default" /> 
+
+</robot>

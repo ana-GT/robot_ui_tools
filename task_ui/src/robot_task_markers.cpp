@@ -54,17 +54,38 @@ void RobotTaskMarkers::init(std::string _chain_group)
   menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
   menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
 
-  // Pose
-  std::string frame_id = params_.reference_frame; 
-  geometry_msgs::msg::Pose marker_pose;
-  doubleArrayToPose(params_.object_start_pose, marker_pose);  
+  // Create poses
+  createTaskMarkers();
 
-  make6DofMarker( false, visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D,
-		  marker_pose, true, frame_id );
-  updatePose(goal_pose_, marker_pose, frame_id);
 
   server_->applyChanges();
 
+}
+
+/**
+ * @function getTaskMarkerName 
+ */
+std::string RobotTaskMarkers::getTaskMarkerName(int i)
+{
+  return std::string("task_marker_") + std::to_string(i);
+}
+
+void RobotTaskMarkers::createTaskMarkers()
+{
+  reference_frame_ = params_.reference_frame; 
+  std::vector<geometry_msgs::msg::Pose> marker_poses(2);
+
+  doubleArrayToPose(params_.object_start_pose, marker_poses[0]);  
+  doubleArrayToPose(params_.object_goal_pose, marker_poses[1]);  
+  int ind;
+
+  for(int i = 0; i < params_.num_task_poses; ++i)
+  {
+    std::string name_i = getTaskMarkerName(i);
+    marker_names_.push_back(name_i);
+    make6DofMarker( false, visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D,
+		                marker_poses[marker_poses.size() <= 2? i : 1], true, reference_frame_ , name_i);    
+  }
 }
 
 /**
@@ -169,7 +190,19 @@ void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::Interacti
 
        auto request = std::make_shared<reachability_msgs::srv::MoveRobotToTask::Request>();
 
-       request->tcp_poses.push_back(goal_pose_);
+      // Get feedback poses
+      for(int i = 0; i < marker_names_.size(); ++i)
+      {
+        visualization_msgs::msg::InteractiveMarker im;
+        if(!server_->get(marker_names_[i], im))
+          return;
+        geometry_msgs::msg::PoseStamped pi;
+        pi.pose = im.pose;
+        pi.header.frame_id = reference_frame_;
+  
+        request->tcp_poses.push_back(pi);
+      }
+
        request->num_robot_placements = params_.num_robot_placements;
       while (!client_->wait_for_service(1s)) {
       
@@ -189,7 +222,7 @@ void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::Interacti
 
   case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
     {
-      updatePose(goal_pose_, feedback->pose, feedback->header);
+      //updatePose(goal_pose_, feedback->pose, feedback->header);
     }
     break;
 
@@ -268,22 +301,23 @@ void RobotTaskMarkers::alignMarker( const visualization_msgs::msg::InteractiveMa
 void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
 				                            const geometry_msgs::msg::Pose &_pose, 
                                     bool show_6dof,
-				                            std::string _frame_id)
+				                            std::string _frame_id,
+                                    std::string _marker_name)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = _frame_id;
   int_marker.pose = _pose;  
   int_marker.scale = 0.4;
 
-  int_marker.name = "goal";
-  int_marker.description = "6-dof goal";
+  int_marker.name = _marker_name;
+  int_marker.description = _marker_name;
 
   // insert a marker
   makeBoxControl(int_marker);
   int_marker.controls[0].interaction_mode = interaction_mode;
 
   visualization_msgs::msg::InteractiveMarkerControl control;
-
+/*
   if ( fixed )
   {
     int_marker.name += "_fixed";
@@ -299,7 +333,7 @@ void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode
       if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D )  mode_text = "MOVE_ROTATE_3D";
       int_marker.name += "_" + mode_text;
       int_marker.description = std::string("3D Control") + (show_6dof ? " + 6-DOF controls" : "") + "\n" + mode_text;
-  }
+  }*/
 
   if(show_6dof)
   {
@@ -472,8 +506,11 @@ void RobotTaskMarkers::showSolution(reachability_msgs::msg::PlaceRobotSolution &
     // Move base
     moveBase(_msg.base_pose);
     // Update arm pose
-    pub_js_->publish(_msg.chain_config);
-
+    for(auto cs : _msg.chain_sols)
+    {
+      pub_js_->publish(cs);
+      usleep(1.0*1e6);
+    }
 }
 
 /**

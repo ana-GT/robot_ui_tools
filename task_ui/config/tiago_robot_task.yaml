@@ -1,4 +1,4 @@
-arm_with_torso:
+arm_torso:
   object_mesh: "package://task_ui/meshes/wine_bottle_reference.dae"
   num_task_poses: 2
   reference_frame: "world"

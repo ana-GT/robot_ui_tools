@@ -46,7 +46,8 @@ protected:
   void make6DofMarker( bool fixed, unsigned int interaction_mode,
 		       const geometry_msgs::msg::Pose& _pose, 
            bool show_6dof,
-		       std::string frame_id); // base_link
+		       std::string frame_id,
+           std::string _marker_name); // base_link
 
   void makeMenuMarker( const tf2::Vector3& position,
 		       std::string frame_id);
@@ -76,16 +77,21 @@ protected:
   void showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg);  
   void moveBase(const geometry_msgs::msg::PoseStamped &_pose);  
 
+  std::string getTaskMarkerName(int i);
+  void createTaskMarkers();
+
   // Parameters
   rclcpp::Node::SharedPtr nh_;
   std::unique_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   
-  geometry_msgs::msg::PoseStamped goal_pose_;
+  //geometry_msgs::msg::PoseStamped goal_pose_;
   rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedPtr client_;
 
   // Params
   robot_task_ui_params::Params params_;
+  std::vector<std::string> marker_names_;
+  std::string reference_frame_;
 
   // Simulate motion
   rclcpp::Client<reachability_msgs::srv::SetRobotPose>::SharedPtr client_move_base_;

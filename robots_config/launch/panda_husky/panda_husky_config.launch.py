@@ -1,3 +1,4 @@
+
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -9,18 +10,34 @@ import xacro
 
 def generate_launch_description():
 
-#    mars_rover_models_path = get_package_share_directory('simulation')
-#    urdf_model_path = os.path.join(mars_rover_models_path, 'models', 'curiosity_path',
-#        'urdf', 'curiosity_mars_rover.xacro.urdf')
-    mars_rover_models_path = get_package_share_directory('robots_config')
-    urdf_model_path = os.path.join(mars_rover_models_path, 'robots', 'curiosity',
-        'curiosity_base_link.urdf.xacro')
+    robot_description_config = xacro.process_file(
+        os.path.join(
+            get_package_share_directory("robots_config"),
+            "robots", "panda_husky",
+            "panda_husky.urdf.xacro",
+        ),
+        mappings ={'hand': 'true'}
+    )
+    robot_description = {"robot_description": robot_description_config.toxml()}
 
-    doc = xacro.process_file(urdf_model_path)
-    robot_description = {'robot_description': doc.toxml()}
+    srdf_file = os.path.join(get_package_share_directory('robots_config'),'config',
+                                              'panda_husky',
+                                              'panda_husky.srdf.xacro')
+    srdf_config = Command(
+        [FindExecutable(name='xacro'), ' ', srdf_file, ' hand:=true']
+    )
+    robot_description_semantic = {
+        'robot_description_semantic': srdf_config
+    }
+
+    panda_zero_joints = {
+      "zeros.panda_joint4": -1.5708,
+      "zeros.panda_joint6": 1.5708 	
+    }
+
 
     rviz_file = os.path.join(get_package_share_directory('robots_config'), 'rviz',
-                             'curiosity.rviz')
+                             'panda_husky.rviz')
 
     return LaunchDescription([
 
@@ -35,6 +52,7 @@ def generate_launch_description():
             package='joint_state_publisher',
             executable='joint_state_publisher',
             name='joint_state_publisher',
+            parameters=[panda_zero_joints],
             output='screen'
         ),
         Node(package='rviz2',

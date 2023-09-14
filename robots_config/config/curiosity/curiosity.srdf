@@ -2,7 +2,7 @@
 <robot name="curiosity">
 
     <group name="arm">
-        <chain base_link="base_footprint" tip_link="arm_tools" />
+        <chain base_link="base_footprint" tip_link="tcp_link" />
     </group>
 
     <group_state name="pose_right_0_down" group="arm">

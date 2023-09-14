@@ -5,7 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /base_link1
+        - /panda_husky1/Status1
       Splitter Ratio: 0.5
     Tree Height: 623
   - Class: rviz_common/Selection
@@ -28,7 +28,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz_default_plugins/Grid
       Color: 160; 160; 164
-      Enabled: false
+      Enabled: true
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
@@ -41,7 +41,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: false
+      Value: true
     - Alpha: 1
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
@@ -60,257 +60,144 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        arm_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_4_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_5_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_6_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_7_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        arm_tool_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_antenna_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_antenna_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_cover_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         base_footprint:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        base_imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base_mic_back_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_mic_back_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_mic_front_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_mic_front_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_sonar_01_link:
+        front_bumper_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base_sonar_02_link:
+        front_left_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base_sonar_03_link:
+        front_right_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_back_left_1_link:
+        gps_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        inertial_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        panda_hand:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_back_left_2_link:
+        panda_hand_tcp:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        panda_leftfinger:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_back_right_1_link:
+        panda_link0:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_back_right_2_link:
+        panda_link1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_front_left_1_link:
+        panda_link2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_front_left_2_link:
+        panda_link3:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_front_right_1_link:
+        panda_link4:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        caster_front_right_2_link:
+        panda_link5:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper_grasping_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_left_finger_link:
+        panda_link6:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper_link:
+        panda_link7:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper_right_finger_link:
+        panda_link8:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper_tool_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_1_link:
+        panda_rightfinger:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        head_2_link:
+        panda_tcp_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rear_bumper_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        head_front_camera_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_front_camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_front_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_front_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_front_camera_orbbec_aux_joint_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_front_camera_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_front_camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        rgbd_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        suspension_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        suspension_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        tcp_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        torso_fixed_column_link:
+        rear_left_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_fixed_link:
+        rear_right_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        torso_lift_link:
+        top_chassis_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wheel_left_link:
+        top_plate_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        top_plate_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        wheel_right_link:
+        top_plate_rear_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        wrist_ft_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_ft_tool_link:
+        user_rail_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -318,7 +205,7 @@ Visualization Manager:
       Mass Properties:
         Inertia: false
         Mass: false
-      Name: Tiago
+      Name: panda_husky
       TF Prefix: ""
       Update Interval: 0
       Value: true
@@ -334,10 +221,10 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/Axes
       Enabled: true
-      Length: 1
+      Length: 0.5
       Name: base_link
       Radius: 0.009999999776482582
-      Reference Frame: world
+      Reference Frame: base_footprint
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -391,7 +278,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: FloorCloud
+      Name: Floor
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
@@ -409,7 +296,7 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      Name: Floor
+      Name: FloorPoints
       Namespaces:
         {}
       Topic:
@@ -465,25 +352,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.102694272994995
+      Distance: 3.8840231895446777
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.8657469153404236
-        Y: 0.22819897532463074
-        Z: 0.5305480360984802
+        X: 0.5229736566543579
+        Y: 0.2548276484012604
+        Z: 0.667422890663147
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3947969079017639
+      Pitch: 0.40979671478271484
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.2703837454319
+      Yaw: 0.7753926515579224
     Saved: ~
 Window Geometry:
   Displays:
@@ -499,5 +386,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1200
-  X: 2235
-  Y: 149
+  X: 2559
+  Y: 136

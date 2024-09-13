@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot name="panda" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find franka_description)/robots/panda/panda.urdf.xacro"/>
+
+  <!-- top links -->
+  <!-- <xacro:if value="$(arg hand)">
+    <link name="grasp_link" />
+    <joint name="grasp_joint" type="fixed">
+        <origin rpy="0 0 1.5708" xyz="0 0 0.07"/>
+        <parent link="$(arg arm_id)_hand"/>
+        <child link="grasp_link"/>
+    </joint>
+  </xacro:if> -->
+
+</robot>

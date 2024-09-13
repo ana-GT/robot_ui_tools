@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+
+<robot name="panda">
+
+    <group name="arm">
+        <chain base_link="panda_link0" tip_link="panda_link7" />
+    </group>
+    <group name="gripper">
+        <link name="panda_hand" />
+        <joint name="panda_finger_joint1" />
+        <joint name="panda_finger_joint2" />
+    </group>
+
+    <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
+    <group_state name="home" group="arm">
+        <joint name="panda_joint1" value="0.0" />
+        <joint name="panda_joint2" value="0.0" />
+        <joint name="panda_joint3" value="0.0" />
+        <joint name="panda_joint4" value="-1.5708" />
+        <joint name="panda_joint5" value="0.0" />
+        <joint name="panda_joint6" value="1.5708" />
+        <joint name="panda_joint7" value="0.0" />
+    </group_state>
+
+    <group_state name="open" group="gripper">
+        <joint name="panda_finger_joint1" value="0.039" />
+        <joint name="panda_finger_joint2" value="0.039" />
+    </group_state>
+    <group_state name="close" group="gripper">
+        <joint name="panda_finger_joint1" value="0.001" />
+        <joint name="panda_finger_joint2" value="0.001" />
+    </group_state>
+    <group_state name="half_open" group="gripper">
+        <joint name="panda_finger_joint1" value="0.02" />
+        <joint name="panda_finger_joint2" value="0.02" />
+    </group_state>
+
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="gripper_ee" parent_link="panda_hand" group="gripper" parent_group="arm" />
+
+
+    <!-- Disable collisions -->
+    <disable_collisions link1="table" link2="panda_link0" reason="Adjacent" />
+    <disable_collisions link1="table" link2="panda_link1" reason="Adjacent" />
+    <disable_collisions link1="panda_link0" link2="panda_link1" reason="Adjacent" />
+    <disable_collisions link1="panda_link1" link2="panda_link2" reason="Adjacent" />
+    <disable_collisions link1="panda_link2" link2="panda_link3" reason="Adjacent" />
+    <disable_collisions link1="panda_link3" link2="panda_link4" reason="Adjacent" />  
+    <disable_collisions link1="panda_link4" link2="panda_link5" reason="Adjacent" /> 
+    <disable_collisions link1="panda_link5" link2="panda_link6" reason="Adjacent" />      
+    <disable_collisions link1="panda_link6" link2="panda_link7" reason="Adjacent" /> 
+    <disable_collisions link1="panda_link7" link2="panda_link8" reason="Adjacent" />
+                  
+    <disable_collisions link1="panda_link1" link2="panda_link3" reason="Adjacent" />
+    <disable_collisions link1="panda_link3" link2="panda_link5" reason="Adjacent" />                                  
+    <disable_collisions link1="panda_link6" link2="panda_link8" reason="Adjacent" />                   
+    <disable_collisions link1="panda_hand" link2="panda_link8" reason="Adjacent" />                       
+    <disable_collisions link1="panda_hand" link2="panda_link7" reason="Adjacent" />                           
+
+    <disable_collisions link1="panda_link8" link2="panda_hand" reason="Adjacent" />      
+    <disable_collisions link1="panda_link8" link2="panda_leftfinger" reason="Adjacent" /> 
+    <disable_collisions link1="panda_link8" link2="panda_rightfinger" reason="Adjacent" />
+    <disable_collisions link1="panda_hand" link2="panda_leftfinger" reason="Adjacent" /> 
+    <disable_collisions link1="panda_hand" link2="panda_rightfinger" reason="Adjacent" />
+    <disable_collisions link1="panda_leftfinger" link2="panda_rightfinger" reason="Adjacent" />
+                      
+</robot>

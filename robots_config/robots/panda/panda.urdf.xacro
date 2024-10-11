@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
-<robot name="panda" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="fr3" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!--Import the original Panda -->
-  <xacro:include filename="$(find franka_description)/robots/panda_arm.urdf.xacro"/>
+  <xacro:include filename="$(find franka_description)/robots/fr3/fr3.urdf.xacro"/>
 
   <!-- TCP link-->
-  <link name="panda_tcp_link" />
+  <link name="fr3_tcp_link" />
   <joint name="tcp_joint" type="fixed">
       <origin rpy="0 0 1.5708" xyz="0 0 0"/>
-      <parent link="panda_hand_tcp"/>
-      <child link="panda_tcp_link"/>
+      <parent link="fr3_hand_tcp"/>
+      <child link="fr3_tcp_link"/>
   </joint>
 
 </robot>

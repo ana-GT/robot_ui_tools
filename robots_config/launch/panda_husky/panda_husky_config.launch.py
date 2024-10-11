@@ -31,8 +31,8 @@ def generate_launch_description():
     }
 
     panda_zero_joints = {
-      "zeros.panda_joint4": -1.5708,
-      "zeros.panda_joint6": 1.5708 	
+      "zeros.fr3_joint4": -1.5708,
+      "zeros.fr3_joint6": 1.5708 	
     }
 
 

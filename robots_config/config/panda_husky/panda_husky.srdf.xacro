@@ -1,119 +1,127 @@
 <?xml version='1.0' encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda_husky">
 
-  <xacro:arg name="arm_id" default="panda"/> <!-- Name of this panda -->
+  <xacro:arg name="arm_id" default="fr3"/> <!-- Name of this panda -->
   <xacro:arg name="hand" default="true"/> <!-- Should a franka_gripper be mounted at the flange? (Currently does not work without it) -->
 
   <xacro:property name="arm_id" value="$(arg arm_id)"/>
 
   <xacro:include filename="$(find robots_config)/config/panda/srdf/panda_arm.xacro"/>
-  <xacro:panda_arm arm_id="${arm_id}"/>
+  <xacro:fr3_arm arm_id="${arm_id}"/>
 
-  <xacro:if value="$(arg hand)">
+  <!--<xacro:if value="$(arg hand)">
     <xacro:include filename="$(find robots_config)/config/panda/srdf/hand.xacro"/>
     <xacro:hand arm_id="${arm_id}"/>
 
     <xacro:include filename="$(find robots_config)/config/panda/srdf/panda_arm_hand.xacro"/>
     <xacro:panda_arm_hand arm_id="${arm_id}"/>
-  </xacro:if>
+  </xacro:if>-->
+  
+    <xacro:if value="$(arg hand)">
+    <xacro:include filename="$(find franka_fr3_moveit_config)/srdf/hand.xacro"/>
+    <xacro:hand arm_id="${arm_id}"/>
+
+    <xacro:include filename="$(find franka_fr3_moveit_config)/srdf/fr3_arm_hand.xacro"/>
+    <xacro:fr3_arm_hand arm_id="${arm_id}"/>
+  </xacro:if>  
 
   <!-- Added to base -->
   
   <group name="arm_base">
-      <chain base_link="base_link" tip_link="panda_tcp_link"/>
+      <chain base_link="base_link" tip_link="fr3_tcp_link"/>
   </group>
 
     <group_state name="right_0_mid" group="arm_base">
-      <joint name="panda_joint1" value="-1.08"/>
-      <joint name="panda_joint2" value="0.734"/>
-      <joint name="panda_joint3" value="-0.110"/>
-      <joint name="panda_joint4" value="-1.335"/>
-      <joint name="panda_joint5" value="1.738"/>
-      <joint name="panda_joint6" value="1.979"/>
-      <joint name="panda_joint7" value="-1.268"/>
+      <joint name="fr3_joint1" value="-1.08"/>
+      <joint name="fr3_joint2" value="0.734"/>
+      <joint name="fr3_joint3" value="-0.110"/>
+      <joint name="fr3_joint4" value="-1.335"/>
+      <joint name="fr3_joint5" value="1.738"/>
+      <joint name="fr3_joint6" value="1.979"/>
+      <joint name="fr3_joint7" value="-1.268"/>
     </group_state>
 
     <group_state name="right_1_mid" group="arm_base">
-      <joint name="panda_joint1" value="-1.081"/>
-      <joint name="panda_joint2" value="0.924"/>
-      <joint name="panda_joint3" value="0.893"/>
-      <joint name="panda_joint4" value="-1.611"/>
-      <joint name="panda_joint5" value="0.611"/>
-      <joint name="panda_joint6" value="1.592"/>
-      <joint name="panda_joint7" value="-1.237"/>
+      <joint name="fr3_joint1" value="-1.081"/>
+      <joint name="fr3_joint2" value="0.924"/>
+      <joint name="fr3_joint3" value="0.893"/>
+      <joint name="fr3_joint4" value="-1.611"/>
+      <joint name="fr3_joint5" value="0.611"/>
+      <joint name="fr3_joint6" value="1.592"/>
+      <joint name="fr3_joint7" value="-1.237"/>
     </group_state>
 
     <group_state name="right_0_up" group="arm_base">
-      <joint name="panda_joint1" value="-0.454"/>
-      <joint name="panda_joint2" value="-0.048"/>
-      <joint name="panda_joint3" value="-0.767"/>
-      <joint name="panda_joint4" value="-1.190"/>
-      <joint name="panda_joint5" value="1.519"/>
-      <joint name="panda_joint6" value="2.285"/>
-      <joint name="panda_joint7" value="-0.392"/>
+      <joint name="fr3_joint1" value="-0.454"/>
+      <joint name="fr3_joint2" value="-0.048"/>
+      <joint name="fr3_joint3" value="-0.767"/>
+      <joint name="fr3_joint4" value="-1.190"/>
+      <joint name="fr3_joint5" value="1.519"/>
+      <joint name="fr3_joint6" value="2.285"/>
+      <joint name="fr3_joint7" value="-0.392"/>
     </group_state>
 
     <group_state name="right_1_up" group="arm_base">
-      <joint name="panda_joint1" value="0.454"/>
-      <joint name="panda_joint2" value="-0.067"/>
-      <joint name="panda_joint3" value="-0.579"/>
-      <joint name="panda_joint4" value="-1.368"/>
-      <joint name="panda_joint5" value="1.237"/>
-      <joint name="panda_joint6" value="2.367"/>
-      <joint name="panda_joint7" value="-0.548"/>
+      <joint name="fr3_joint1" value="0.454"/>
+      <joint name="fr3_joint2" value="-0.067"/>
+      <joint name="fr3_joint3" value="-0.579"/>
+      <joint name="fr3_joint4" value="-1.368"/>
+      <joint name="fr3_joint5" value="1.237"/>
+      <joint name="fr3_joint6" value="2.367"/>
+      <joint name="fr3_joint7" value="-0.548"/>
     </group_state>
 
     <group_state name="left_0_mid" group="arm_base">
-      <joint name="panda_joint1" value="0.893"/>
-      <joint name="panda_joint2" value="0.886"/>
-      <joint name="panda_joint3" value="0.548"/>
-      <joint name="panda_joint4" value="-1.416"/>
-      <joint name="panda_joint5" value="-2.114"/>
-      <joint name="panda_joint6" value="1.837"/>
-      <joint name="panda_joint7" value="-0.298"/>
+      <joint name="fr3_joint1" value="0.893"/>
+      <joint name="fr3_joint2" value="0.886"/>
+      <joint name="fr3_joint3" value="0.548"/>
+      <joint name="fr3_joint4" value="-1.416"/>
+      <joint name="fr3_joint5" value="-2.114"/>
+      <joint name="fr3_joint6" value="1.837"/>
+      <joint name="fr3_joint7" value="-0.298"/>
     </group_state>
 
     <group_state name="left_1_mid" group="arm_base">
-      <joint name="panda_joint1" value="1.926"/>
-      <joint name="panda_joint2" value="1.515"/>
-      <joint name="panda_joint3" value="-1.268"/>
-      <joint name="panda_joint4" value="-2.147"/>
-      <joint name="panda_joint5" value="0.110"/>
-      <joint name="panda_joint6" value="1.837"/>
-      <joint name="panda_joint7" value="-0.798"/>
+      <joint name="fr3_joint1" value="1.926"/>
+      <joint name="fr3_joint2" value="1.515"/>
+      <joint name="fr3_joint3" value="-1.268"/>
+      <joint name="fr3_joint4" value="-2.147"/>
+      <joint name="fr3_joint5" value="0.110"/>
+      <joint name="fr3_joint6" value="1.837"/>
+      <joint name="fr3_joint7" value="-0.798"/>
     </group_state>
 
     <group_state name="left_0_up" group="arm_base">
-      <joint name="panda_joint1" value="2.741"/>
-      <joint name="panda_joint2" value="0.334"/>
-      <joint name="panda_joint3" value="-1.049"/>
-      <joint name="panda_joint4" value="-1.335"/>
-      <joint name="panda_joint5" value="-1.206"/>
-      <joint name="panda_joint6" value="1.857"/>
-      <joint name="panda_joint7" value="-0.798"/>
+      <joint name="fr3_joint1" value="2.741"/>
+      <joint name="fr3_joint2" value="0.334"/>
+      <joint name="fr3_joint3" value="-1.049"/>
+      <joint name="fr3_joint4" value="-1.335"/>
+      <joint name="fr3_joint5" value="-1.206"/>
+      <joint name="fr3_joint6" value="1.857"/>
+      <joint name="fr3_joint7" value="-0.798"/>
     </group_state>
 
     <group_state name="left_1_up" group="arm_base">
-      <joint name="panda_joint1" value="1.989"/>
-      <joint name="panda_joint2" value="0.581"/>
-      <joint name="panda_joint3" value="-1.362"/>
-      <joint name="panda_joint4" value="-1.303"/>
-      <joint name="panda_joint5" value="-1.175"/>
-      <joint name="panda_joint6" value="1.185"/>
-      <joint name="panda_joint7" value="-0.798"/>
+      <joint name="fr3_joint1" value="1.989"/>
+      <joint name="fr3_joint2" value="0.581"/>
+      <joint name="fr3_joint3" value="-1.362"/>
+      <joint name="fr3_joint4" value="-1.303"/>
+      <joint name="fr3_joint5" value="-1.175"/>
+      <joint name="fr3_joint6" value="1.185"/>
+      <joint name="fr3_joint7" value="-0.798"/>
     </group_state>
 
-    <disable_collisions link1="panda_link5" link2="panda_hand" reason="Adjacent" />
-    <disable_collisions link1="front_left_wheel" link2="panda_link1" reason="Adjacent" />
-    <disable_collisions link1="front_right_wheel" link2="panda_link1" reason="Adjacent" />
+    <disable_collisions link1="fr3_link5" link2="fr3_hand" reason="Adjacent" />
+    <disable_collisions link1="front_left_wheel" link2="fr3_link1" reason="Adjacent" />
+    <disable_collisions link1="front_right_wheel" link2="fr3_link1" reason="Adjacent" />
     <disable_collisions link1="rear_left_wheel" link2="top_plate_link" reason="Adjacent" />
     <disable_collisions link1="rear_right_wheel" link2="top_plate_link" reason="Adjacent" />
-    <disable_collisions link1="panda_link0" link2="base_link" reason="Adjacent" />
-    <disable_collisions link1="panda_link1" link2="base_link" reason="Adjacent" />
+    <disable_collisions link1="fr3_link0" link2="base_link" reason="Adjacent" />
+    <disable_collisions link1="fr3_link1" link2="base_link" reason="Adjacent" />
     <disable_collisions link1="front_right_wheel" link2="top_plate_link" reason="Adjacent" />
     <disable_collisions link1="front_left_wheel" link2="top_plate_link" reason="Adjacent" />
-    <disable_collisions link1="panda_link1" link2="top_plate_link" reason="Adjacent" />
-    <disable_collisions link1="panda_link5" link2="panda_link7" reason="Adjacent" />
-    <!--panda_link8 and panda_link5-->
+    <disable_collisions link1="fr3_link1" link2="top_plate_link" reason="Adjacent" />
+    <disable_collisions link1="fr3_link5" link2="fr3_link7" reason="Adjacent" />
+    <!--fr3_link8 and fr3_link5-->
 
 </robot>

@@ -19,12 +19,15 @@ def generate_launch_description():
         ),
         mappings ={'hand': 'true'}
     )
+    
     robot_description = {"robot_description": robot_description_config.toxml()}
 
     srdf_file = os.path.join(get_package_share_directory('robots_config'),'config',
                                               'panda',
                                               'srdf',
                                               'panda_arm.srdf.xacro')
+
+
     srdf_config = Command(
         [FindExecutable(name='xacro'), ' ', srdf_file, ' hand:=true']
     )
@@ -33,8 +36,8 @@ def generate_launch_description():
     }
 
     panda_zero_joints = {
-      "zeros.panda_joint4": -1.5708,
-      "zeros.panda_joint6": 1.5708 	
+      "zeros.fr3_joint4": -1.5708,
+      "zeros.fr3_joint6": 1.5708 	
     }
 
     rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
@@ -57,7 +60,7 @@ def generate_launch_description():
         executable="static_transform_publisher",
         name="static_transform_publisher",
         output="log",
-        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "panda_link0"],
+        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "base"],
     )
 
     # Publish TF

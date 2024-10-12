@@ -29,11 +29,11 @@ set(ROBOT_TASK_UI_PARAM_LIB robot_task_ui_params)
 generate_parameter_library(${ROBOT_TASK_UI_PARAM_LIB} 
                            src/robot_task_ui_params.yaml)
 
-add_library(task_ui src/task_ui.cpp)
-ament_target_dependencies(task_ui ${DEPS})
+add_library(${PROJECT_NAME} SHARED src/task_ui.cpp)
+ament_target_dependencies(${PROJECT_NAME} ${DEPS})
 
 # Markers used for Reachability
-add_library(robot_task_markers src/robot_task_markers.cpp)
+add_library(robot_task_markers SHARED src/robot_task_markers.cpp)
 target_link_libraries(robot_task_markers ${ROBOT_TASK_UI_PARAM_LIB})
 ament_target_dependencies(robot_task_markers ${DEPS})
 
@@ -42,8 +42,8 @@ target_link_libraries(robot_task_markers_node robot_task_markers)
 
 
 
-add_library(task_ui_markers src/task_ui_markers.cpp)
-target_link_libraries(task_ui_markers task_ui)
+add_library(task_ui_markers SHARED src/task_ui_markers.cpp)
+target_link_libraries(task_ui_markers ${PROJECT_NAME})
 ament_target_dependencies(task_ui_markers ${DEPS} )
 
 add_executable(task_ui_markers_node src/task_ui_markers_node.cpp)
@@ -53,7 +53,10 @@ target_link_libraries(task_ui_markers_node task_ui_markers)
 add_executable(trac_ik_test src/trac_ik_test.cpp)
 ament_target_dependencies(trac_ik_test ${DEPS})
 
-
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 
 install(DIRECTORY launch meshes config
   DESTINATION share/${PROJECT_NAME}
@@ -67,6 +70,7 @@ install(
   robot_task_markers
   robot_task_markers_node 
   trac_ik_test
+  EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

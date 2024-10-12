@@ -122,6 +122,9 @@
     <disable_collisions link1="front_left_wheel" link2="top_plate_link" reason="Adjacent" />
     <disable_collisions link1="fr3_link1" link2="top_plate_link" reason="Adjacent" />
     <disable_collisions link1="fr3_link5" link2="fr3_link7" reason="Adjacent" />
+    <!-- Husky and Panda connection-->
+    <disable_collisions link1="fr3_link0" link2="top_plate_link" reason="Adjacent" />
+
     <!--fr3_link8 and fr3_link5-->
 
 </robot>

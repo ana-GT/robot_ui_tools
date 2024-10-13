@@ -1,6 +1,6 @@
 arm_base:
   object_mesh: "package://task_ui/meshes/wine_bottle_reference.dae"
-  num_task_poses: 2
+  num_task_poses: 1
   reference_frame: "world"
 
   num_robot_placements: 10

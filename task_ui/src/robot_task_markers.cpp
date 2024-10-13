@@ -504,6 +504,7 @@ void RobotTaskMarkers::moveBase(const geometry_msgs::msg::PoseStamped &_pose)
 void RobotTaskMarkers::showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg)
 {
     // Move base
+    //RCLCPP_INFO(nh_->get_logger(), "Showing solutions: moving base and showing %d arm sols", _msg.chain_sols.size());
     moveBase(_msg.base_pose);
     // Update arm pose
     for(auto cs : _msg.chain_sols)
@@ -515,6 +516,7 @@ void RobotTaskMarkers::showSolution(reachability_msgs::msg::PlaceRobotSolution &
 
 /**
  * @function timer_cb
+ * @brief Not used
  */
 void RobotTaskMarkers::timer_cb()
 {

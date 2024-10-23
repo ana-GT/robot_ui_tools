@@ -14,12 +14,10 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 
-#include <sensor_msgs/msg/joint_state.hpp>
 #include <Eigen/Geometry>
 
-#include <reachability_msgs/srv/move_robot_to_task.hpp>
 #include <reachability_msgs/srv/set_robot_pose.hpp>
-
+#include <sensor_msgs/msg/joint_state.hpp>
 
 #include <math.h>
 
@@ -33,7 +31,8 @@ class RobotTaskMarkers
 {
 public:
   RobotTaskMarkers(rclcpp::Node::SharedPtr _nh);
-  void init(std::string _group);
+  void init(const std::string &_group);
+  virtual void init_(const std::string &_group) = 0;
   void stop();
   
 protected:
@@ -41,13 +40,14 @@ protected:
   visualization_msgs::msg::Marker makeMeshMarker( visualization_msgs::msg::InteractiveMarker &msg );
   visualization_msgs::msg::InteractiveMarkerControl& makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg );
  
-  void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
+  virtual void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback ) = 0;
+
   void alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
   void make6DofMarker( bool fixed, unsigned int interaction_mode,
 		       const geometry_msgs::msg::Pose& _pose, 
-           bool show_6dof,
+                      bool show_6dof,
 		       std::string frame_id,
-           std::string _marker_name); // base_link
+                      std::string _marker_name); // base_link
 
   void makeMenuMarker( const tf2::Vector3& position,
 		       std::string frame_id);
@@ -61,47 +61,25 @@ protected:
 
   bool doubleArrayToPose(const std::vector<double> &_arr, 
                          geometry_msgs::msg::Pose &_pose);
-
-  void updatePose(geometry_msgs::msg::PoseStamped &_pose, 
-                const geometry_msgs::msg::Pose &_pos, 
-                const std_msgs::msg::Header &_hed);  
-
-  void updatePose(geometry_msgs::msg::PoseStamped &_pose, 
-                  const geometry_msgs::msg::Pose &_pos, 
-                  const std::string &_frame_id);                                       
-
-  void timer_cb();
-  void client_cb(rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedFuture _future);
+                                      
 
   // To simulate motion
-  void showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg);  
   void moveBase(const geometry_msgs::msg::PoseStamped &_pose);  
 
   std::string getTaskMarkerName(int i);
   void createTaskMarkers();
 
   // Parameters
-  rclcpp::Node::SharedPtr nh_;
+  rclcpp::Node::SharedPtr node_;
   std::unique_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   
-  //geometry_msgs::msg::PoseStamped goal_pose_;
-  rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedPtr client_;
-
   // Params
   robot_task_ui_params::Params params_;
   std::vector<std::string> marker_names_;
   std::string reference_frame_;
 
-  // Simulate motion
-  rclcpp::Client<reachability_msgs::srv::SetRobotPose>::SharedPtr client_move_base_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_js_;
-  std::shared_future<std::shared_ptr<reachability_msgs::srv::MoveRobotToTask::Response>> client_result_;
-
-  // Update
-  rclcpp::TimerBase::SharedPtr timer_;
-  bool wait_for_result_;
+  rclcpp::Client<reachability_msgs::srv::SetRobotPose>::SharedPtr client_move_base_;
 };
-
-
 

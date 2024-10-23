@@ -13,14 +13,14 @@ using namespace std::chrono_literals;
  * @brief Constructor
  */
 RobotTaskMarkers::RobotTaskMarkers(rclcpp::Node::SharedPtr _nh) :
-  nh_(_nh)
+  node_(_nh)
 {
   server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/task_marker",
-									   nh_->get_node_base_interface(),
-									   nh_->get_node_clock_interface(),
-									   nh_->get_node_logging_interface(),
-									   nh_->get_node_topics_interface(),
-									   nh_->get_node_services_interface());
+									   node_->get_node_base_interface(),
+									   node_->get_node_clock_interface(),
+									   node_->get_node_logging_interface(),
+									   node_->get_node_topics_interface(),
+									   node_->get_node_services_interface());
 
 }
 
@@ -29,38 +29,29 @@ void RobotTaskMarkers::stop()
   server_.reset();
 }
 
-/**
- * @function init
- */
-void RobotTaskMarkers::init(std::string _chain_group)
+void RobotTaskMarkers::init(const std::string &_chain_group)
 {
-  client_ = nh_->create_client<reachability_msgs::srv::MoveRobotToTask>("robot_to_task");
-  client_move_base_ = nh_->create_client<reachability_msgs::srv::SetRobotPose>("set_robot_pose");
-  pub_js_ = nh_->create_publisher<sensor_msgs::msg::JointState>("joint_state_command", 10);
-
-  //timer_ = nh_->create_wall_timer(std::chrono::milliseconds(200), std::bind(&RobotTaskMarkers::timer_cb, this));
-  wait_for_result_ = false;
+  // To simulate arm motion and robot base moving
+  pub_js_ = node_->create_publisher<sensor_msgs::msg::JointState>("joint_state_command", 10);
+  client_move_base_ = node_->create_client<reachability_msgs::srv::SetRobotPose>("set_robot_pose");
 
   // Load
   std::string param_prefix = "robot_task_ui_params." + _chain_group;
 
   std::shared_ptr<robot_task_ui_params::ParamListener> param_listener;
-  param_listener = std::make_shared<robot_task_ui_params::ParamListener>(nh_, param_prefix);
+  param_listener = std::make_shared<robot_task_ui_params::ParamListener>(node_, param_prefix);
   params_ = param_listener->get_params();
 
-
-  menu_handler_.insert( "Get Robot pose", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
-  interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
-  menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
-  menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&RobotTaskMarkers::processFeedback, this, _1));
-
-  // Create poses
+  // Create markers that represent the task
   createTaskMarkers();
-
-
+  
+  // Call derived class specific
+  init_(_chain_group);
+  
+  // Update
   server_->applyChanges();
-
 }
+
 
 /**
  * @function getTaskMarkerName 
@@ -70,8 +61,12 @@ std::string RobotTaskMarkers::getTaskMarkerName(int i)
   return std::string("task_marker_") + std::to_string(i);
 }
 
+/**
+ * @brief createTaskMarkers
+ */
 void RobotTaskMarkers::createTaskMarkers()
 {
+  RCLCPP_INFO_STREAM( node_->get_logger(), "Creating task markers" );
   reference_frame_ = params_.reference_frame; 
   std::vector<geometry_msgs::msg::Pose> marker_poses(2);
 
@@ -167,109 +162,6 @@ visualization_msgs::msg::InteractiveMarkerControl& RobotTaskMarkers::makeBoxCont
 }
 
 
-// %Tag(processFeedback)%
-void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
-{
-  std::ostringstream s;
-  s << "* Feedback from marker '" << feedback->marker_name;
-
-  std::ostringstream mouse_point_ss;
-  if( feedback->mouse_point_valid )
-  {
-    mouse_point_ss << " at " << feedback->mouse_point.x
-                   << ", " << feedback->mouse_point.y
-                   << ", " << feedback->mouse_point.z
-                   << " in frame " << feedback->header.frame_id;
-  }
-
-  switch ( feedback->event_type )
-  {
-  case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
-    {
-      RCLCPP_INFO_STREAM( nh_->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked");      
-
-       auto request = std::make_shared<reachability_msgs::srv::MoveRobotToTask::Request>();
-
-      // Get feedback poses
-      for(int i = 0; i < marker_names_.size(); ++i)
-      {
-        visualization_msgs::msg::InteractiveMarker im;
-        if(!server_->get(marker_names_[i], im))
-          return;
-        geometry_msgs::msg::PoseStamped pi;
-        pi.pose = im.pose;
-        pi.header.frame_id = reference_frame_;
-  
-        request->tcp_poses.push_back(pi);
-      }
-
-       request->num_robot_placements = params_.num_robot_placements;
-      while (!client_->wait_for_service(1s)) {
-      
-        if (!rclcpp::ok()) {
-          RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-          return;
-        }
-        RCLCPP_WARN(nh_->get_logger(), "service not available, waiting again...");
-      }
-    
-      RCLCPP_INFO(nh_->get_logger(), "Sending request for manipulation task plan");
-      auto result = client_->async_send_request(request, 
-                       std::bind(&RobotTaskMarkers::client_cb, this, std::placeholders::_1));
-     // Do not wait for result or crash. No nested wait spinning
-    }
-    break;
-
-  case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
-    {
-      //updatePose(goal_pose_, feedback->pose, feedback->header);
-    }
-    break;
-
-  }
-
-  server_->applyChanges();
-}
-
-void RobotTaskMarkers::client_cb(rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedFuture _future)
-{
-  auto status = _future.wait_for(1s);
-  if (status == std::future_status::ready)
-  {
-      RCLCPP_INFO(nh_->get_logger(), "Status is ready?");
-      auto response = _future.get();
-      RCLCPP_INFO(nh_->get_logger(), "Got response with %lu solutions", response->solutions.size());
-
-    RCLCPP_INFO(nh_->get_logger(), "Showing %ld solutions", response->solutions.size());
-    for(auto si : response->solutions)
-    {
-      showSolution(si);
-      usleep(1.0*1e6);
-    }
-
-  }
-      
-      
-}
-
-/**
- * @function updatePose
- */
-void RobotTaskMarkers::updatePose(geometry_msgs::msg::PoseStamped &_pose, 
-                  const geometry_msgs::msg::Pose &_pos, 
-                  const std_msgs::msg::Header &_hed)
-{
-  _pose.pose = _pos;
-  _pose.header = _hed;
-}
-
-void RobotTaskMarkers::updatePose(geometry_msgs::msg::PoseStamped &_pose, 
-                  const geometry_msgs::msg::Pose &_pos, 
-                  const std::string &_frame_id)
-{
-  _pose.pose = _pos;
-  _pose.header.frame_id = _frame_id;
-}
 
 /**
  * @function alignMarker
@@ -281,7 +173,7 @@ void RobotTaskMarkers::alignMarker( const visualization_msgs::msg::InteractiveMa
   pose.position.x = round(pose.position.x-0.5)+0.5;
   pose.position.y = round(pose.position.y-0.5)+0.5;
 
-  RCLCPP_INFO_STREAM( nh_->get_logger(), feedback->marker_name << ":"
+  RCLCPP_INFO_STREAM( node_->get_logger(), feedback->marker_name << ":"
       << " aligning position = "
       << feedback->pose.position.x
       << ", " << feedback->pose.position.y
@@ -299,10 +191,10 @@ void RobotTaskMarkers::alignMarker( const visualization_msgs::msg::InteractiveMa
  * @function make6DofMarkers
  */
 void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode,
-				                            const geometry_msgs::msg::Pose &_pose, 
-                                    bool show_6dof,
-				                            std::string _frame_id,
-                                    std::string _marker_name)
+				        const geometry_msgs::msg::Pose &_pose, 
+                                       bool show_6dof,
+				        std::string _frame_id,
+                                       std::string _marker_name)
 {
   visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = _frame_id;
@@ -489,53 +381,12 @@ void RobotTaskMarkers::moveBase(const geometry_msgs::msg::PoseStamped &_pose)
   while (!client_move_base_->wait_for_service(1s)) {
       
     if (!rclcpp::ok()) {
-      RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+      RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
       return;
     }
-    RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
+    RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
   }
 
   auto result = client_move_base_->async_send_request(request);
 }
 
-/**
- * @function showSolution
- */
-void RobotTaskMarkers::showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg)
-{
-    // Move base
-    //RCLCPP_INFO(nh_->get_logger(), "Showing solutions: moving base and showing %d arm sols", _msg.chain_sols.size());
-    moveBase(_msg.base_pose);
-    // Update arm pose
-    for(auto cs : _msg.chain_sols)
-    {
-      pub_js_->publish(cs);
-      usleep(1.0*1e6);
-    }
-}
-
-/**
- * @function timer_cb
- * @brief Not used
- */
-void RobotTaskMarkers::timer_cb()
-{
-   RCLCPP_INFO(nh_->get_logger(), "Timer check...");
-  if(!wait_for_result_)
-    return;
-
-  if(client_result_.valid())
-  {
-    wait_for_result_ = false;  
- 
-    auto result = client_result_.get();
-    RCLCPP_INFO(nh_->get_logger(), "Timer got valid result. Showing %ld solutions", result->solutions.size());
-    for(auto si : result->solutions)
-    {
-      showSolution(si);
-      usleep(1.0*1e6);
-    }
-
-  }
-
-}

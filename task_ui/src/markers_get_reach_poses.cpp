@@ -99,11 +99,12 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
       RCLCPP_INFO(node_->get_logger(), "Got response with %lu solutions", response->ee_poses.size());
 
     //RCLCPP_INFO(node_->get_logger(), "Showing %ld solutions", response->solutions.size());
-    /*for(auto si : response->solutions)
+    for(auto pi : response->ee_poses)
     {
-      showSolution(si);
-      usleep(1.0*1e6);
-    }*/
+      RCLCPP_INFO(node_->get_logger(), "EE Pose: %f %f %f", pi.pose.position.x, pi.pose.position.y, pi.pose.position.z);
+      //showSolution(si);
+      //usleep(1.0*1e6);
+    }
 
   }
       

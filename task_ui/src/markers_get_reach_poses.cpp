@@ -31,11 +31,12 @@ void MarkersGetReachPoses::init_(const std::string &_chain_group)
 // %Tag(processFeedback)%
 void MarkersGetReachPoses::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
-          RCLCPP_ERROR(node_->get_logger(), "Processing feeback from markers_get_reach_poses");
+
   switch ( feedback->event_type )
   {
   case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
+          RCLCPP_ERROR(node_->get_logger(), "Processing feeback from markers_get_reach_poses's menu select. Marker size: %d", marker_names_.size());
        auto request = std::make_shared<reachability_msgs::srv::GenerateReachPoses::Request>();
 
       // Get feedback poses

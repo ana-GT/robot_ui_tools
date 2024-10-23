@@ -42,11 +42,13 @@ void RobotTaskMarkers::init(const std::string &_chain_group)
   param_listener = std::make_shared<robot_task_ui_params::ParamListener>(node_, param_prefix);
   params_ = param_listener->get_params();
 
-  // Create markers that represent the task
-  createTaskMarkers();
   
   // Call derived class specific
   init_(_chain_group);
+
+  // Create markers that represent the task
+  // has to come AFTER init_ to attach menus accordingly
+  createTaskMarkers();
   
   // Update
   server_->applyChanges();

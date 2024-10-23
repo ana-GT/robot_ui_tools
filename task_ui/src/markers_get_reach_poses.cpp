@@ -19,6 +19,8 @@ void MarkersGetReachPoses::init_(const std::string &_chain_group)
   // Services to use to call reachability-related queries
   client_ = node_->create_client<reachability_msgs::srv::GenerateReachPoses>("generate_reach_poses");
 
+  publisher_marker_ = node_>create_publisher<std_msgs::msg::String>("show_ee_poses", 10);
+
   // Interactive marker stuff
   menu_handler_.insert( "Get Robot pose", std::bind(&MarkersGetReachPoses::processFeedback, this, _1));
   //interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
@@ -102,6 +104,9 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
     for(auto pi : response->ee_poses)
     {
       RCLCPP_INFO(node_->get_logger(), "EE Pose: %f %f %f", pi.pose.position.x, pi.pose.position.y, pi.pose.position.z);
+      visualization_msgs::msg::Marker mi;
+      createArrowMarker(mi);
+      publisher_marker_->publish(mi);      
       //showSolution(si);
       //usleep(1.0*1e6);
     }
@@ -110,5 +115,36 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
       
       
 }
+
+void createArrowMarker(visualization_msgs::Marker &_marker, int _id, geometry_msgs::msg::PoseStamped &_pi)
+{
+   _marker.header.frame_id = _pi.header.frame_id;
+   _marker.header.stamp = node_->now();
+   _marker.ns = "ee_pose";
+   _marker.id = _id;
+   _marker.type = visualization_msgs::Marker::ARROW;
+   _marker.action = visualization_msgs::Marker::ADD;
+   _marker.pose.position = _pi.pose;
+  _marker.scale.x = 0.03; // shaft diameter
+  _marker.scale.y = 0.045; // head diameter
+  _marker.scale.z = 0.01; // arrow height
+  _marker.color.a = 1.0; // Don't forget to set the alpha!
+  _marker.color.r = 0.4;
+  _marker.color.g = 0.0;
+  _marker.color.b = 0.4;
+  
+  geometry_msgs::msg::Point ps, pe;
+  pe.x = _marker.pose.position.x;
+  pe.y = _marker.pose.position.y;
+  pe.z = _marker.pose.position.z;
+  
+  ps.x = _marker.pose.position.x;
+
+  
+  _marker.points.push_back(ps);
+  _marker.points.push_back(pe);
+    
+}
+
 
 

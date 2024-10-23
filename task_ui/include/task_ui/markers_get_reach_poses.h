@@ -2,6 +2,7 @@
 #include <task_ui/robot_task_markers.h>
 
 #include <reachability_msgs/srv/generate_reach_poses.hpp>
+#include <reachability_msgs/msg/marker.hpp>
 
 class MarkersGetReachPoses : public RobotTaskMarkers {
 
@@ -20,6 +21,8 @@ protected:
   rclcpp::Client<reachability_msgs::srv::GenerateReachPoses>::SharedPtr client_;
   std::shared_future<std::shared_ptr<reachability_msgs::srv::GenerateReachPoses::Response>> client_result_;
 
+  // Added to show EE poses
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher_marker_;
 
 };
 

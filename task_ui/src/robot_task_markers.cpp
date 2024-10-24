@@ -46,14 +46,33 @@ void RobotTaskMarkers::init(const std::string &_chain_group)
   // Call derived class specific
   init_(_chain_group);
 
+  // Add menu handler to hide/show the gimbal
+  interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "View" );
+  menu_handler_.insert( sub_menu_handle, "Hide/Show 6D gimbal", std::bind(&RobotTaskMarkers::switchGimbal, this, _1));
+ 
+
   // Create markers that represent the task
   // has to come AFTER init_ to attach menus accordingly
   createTaskMarkers();
   
+ 
   // Update
   server_->applyChanges();
 }
 
+void RobotTaskMarkers::switchGimbal( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+{
+
+  switch ( feedback->event_type )
+  {
+     case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
+      if(isGimbalShowing())
+        hideGimbal();
+      else
+        showGimbal();  
+     break;
+  }
+}
 
 /**
  * @function getTaskMarkerName 
@@ -151,9 +170,9 @@ visualization_msgs::msg::Marker RobotTaskMarkers::makeMeshMarker(visualization_m
 }
 
 /**
- * @function makeBoxControl
+ * @function makeMeshControl
  */
-visualization_msgs::msg::InteractiveMarkerControl& RobotTaskMarkers::makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg )
+visualization_msgs::msg::InteractiveMarkerControl& RobotTaskMarkers::makeMeshControl( visualization_msgs::msg::InteractiveMarker &msg )
 {
   visualization_msgs::msg::InteractiveMarkerControl control;
   control.always_visible = true;
@@ -207,40 +226,79 @@ void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode
   int_marker.description = _marker_name;
 
   // insert a marker
-  makeBoxControl(int_marker);
+  makeMeshControl(int_marker);
   int_marker.controls[0].interaction_mode = interaction_mode;
 
-  visualization_msgs::msg::InteractiveMarkerControl control;
-/*
-  if ( fixed )
-  {
-    int_marker.name += "_fixed";
-    int_marker.description += "\n(fixed orientation)";
-    control.orientation_mode = visualization_msgs::msg::InteractiveMarkerControl::FIXED;
-  }
+  if(show_6dof)
+    addGimbal(int_marker);
+
+  server_->insert(int_marker);
+  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
 
   if (interaction_mode != visualization_msgs::msg::InteractiveMarkerControl::NONE)
-  {
-      std::string mode_text;
-      if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::MOVE_3D )         mode_text = "MOVE_3D";
-      if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::ROTATE_3D )       mode_text = "ROTATE_3D";
-      if( interaction_mode == visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D )  mode_text = "MOVE_ROTATE_3D";
-      int_marker.name += "_" + mode_text;
-      int_marker.description = std::string("3D Control") + (show_6dof ? " + 6-DOF controls" : "") + "\n" + mode_text;
-  }*/
+    menu_handler_.apply( *server_, int_marker.name );
+}
 
-  if(show_6dof)
+bool RobotTaskMarkers::isGimbalShowing()
+{
+  for(int i = 0; i < params_.num_task_poses; ++i)
   {
+    visualization_msgs::msg::InteractiveMarker im;
+    std::string name_i = getTaskMarkerName(i);
+    server_->get(name_i, im);
+    
+    if( im.controls.size() > 6 )
+      return true;
+  }
+  
+  return false;
+}
+
+void RobotTaskMarkers::hideGimbal()
+{
+  for(int i = 0; i < params_.num_task_poses; ++i)
+  {
+    visualization_msgs::msg::InteractiveMarker im;
+    std::string name_i = getTaskMarkerName(i);
+    server_->get(name_i, im);
+    int num = im.controls.size();
+    for(int j = 1; j < num; ++j)
+      im.controls.pop_back();
+    
+    server_->insert(im);
+    server_->applyChanges();
+  }  
+}
+
+void RobotTaskMarkers::showGimbal()
+{
+  for(int i = 0; i < params_.num_task_poses; ++i)
+  {
+    visualization_msgs::msg::InteractiveMarker im;
+    std::string name_i = getTaskMarkerName(i);
+    server_->get(name_i, im);
+    
+    addGimbal(im);    
+    server_->insert(im);
+    server_->applyChanges();
+  }  
+
+}
+
+void RobotTaskMarkers::addGimbal( visualization_msgs::msg::InteractiveMarker &_im )
+{
+  visualization_msgs::msg::InteractiveMarkerControl control;
+  
     control.orientation.w = 1;
     control.orientation.x = 1;
     control.orientation.y = 0;
     control.orientation.z = 0;
     control.name = "rotate_x";
     control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
+    _im.controls.push_back(control);
     control.name = "move_x";
     control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
+    _im.controls.push_back(control);
 
     control.orientation.w = 1;
     control.orientation.x = 0;
@@ -248,10 +306,10 @@ void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode
     control.orientation.z = 0;
     control.name = "rotate_z";
     control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
+    _im.controls.push_back(control);
     control.name = "move_z";
     control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
+    _im.controls.push_back(control);
 
     control.orientation.w = 1;
     control.orientation.x = 0;
@@ -259,18 +317,11 @@ void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode
     control.orientation.z = 1;
     control.name = "rotate_y";
     control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
+    _im.controls.push_back(control);
     control.name = "move_y";
     control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-  }
-
-  server_->insert(int_marker);
-  server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
-  if (interaction_mode != visualization_msgs::msg::InteractiveMarkerControl::NONE)
-    menu_handler_.apply( *server_, int_marker.name );
+    _im.controls.push_back(control);
 }
-
 
 /**
  * @function makeMenuMarker

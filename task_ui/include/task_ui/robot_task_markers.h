@@ -38,9 +38,10 @@ public:
 protected:
   visualization_msgs::msg::Marker makeBox( visualization_msgs::msg::InteractiveMarker &msg );
   visualization_msgs::msg::Marker makeMeshMarker( visualization_msgs::msg::InteractiveMarker &msg );
-  visualization_msgs::msg::InteractiveMarkerControl& makeBoxControl( visualization_msgs::msg::InteractiveMarker &msg );
+  visualization_msgs::msg::InteractiveMarkerControl& makeMeshControl( visualization_msgs::msg::InteractiveMarker &msg );
  
   virtual void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback ) = 0;
+  void switchGimbal( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
 
   void alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
   void make6DofMarker( bool fixed, unsigned int interaction_mode,
@@ -55,6 +56,11 @@ protected:
 			 std::string frame_id);
   void makeMovingMarker( const tf2::Vector3& position,
 			 std::string frame_id); // moving_frame
+  
+  bool isGimbalShowing();
+  void showGimbal();
+  void hideGimbal();
+  void addGimbal( visualization_msgs::msg::InteractiveMarker &_im );
   
   double rand( double min, double max );
   void saveMarker( visualization_msgs::msg::InteractiveMarker int_marker );

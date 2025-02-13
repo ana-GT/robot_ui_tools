@@ -5,8 +5,8 @@
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
-MarkersGetReachPoses::MarkersGetReachPoses(rclcpp::Node::SharedPtr _node) :
-RobotTaskMarkers(_node)
+MarkersGetReachPoses::MarkersGetReachPoses(const std::string &_server_name) :
+RobotTaskMarkers(_server_name)
 {
 
 }
@@ -14,12 +14,12 @@ RobotTaskMarkers(_node)
 /**
  * @function init
  */
-void MarkersGetReachPoses::init_(const std::string &_chain_group)
+bool MarkersGetReachPoses::init_(const std::string &_chain_group)
 {
   // Services to use to call reachability-related queries
-  client_ = node_->create_client<reachability_msgs::srv::GenerateReachPoses>("generate_reach_poses");
+  client_ = this->create_client<reachability_msgs::srv::GenerateReachPoses>("generate_reach_poses");
                              
-  publisher_marker_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>("show_ee_poses", 10);
+  publisher_marker_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("show_ee_poses", 10);
 
   // Interactive marker stuff
   menu_handler_.insert( "Get Robot pose", std::bind(&MarkersGetReachPoses::processFeedback, this, _1));
@@ -38,7 +38,7 @@ void MarkersGetReachPoses::processFeedback( const visualization_msgs::msg::Inter
   {
   case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
-          RCLCPP_ERROR(node_->get_logger(), "Processing feeback from markers_get_reach_poses's menu select. Marker size: %d", marker_names_.size());
+          RCLCPP_ERROR(this->get_logger(), "Processing feeback from markers_get_reach_poses's menu select. Marker size: %d", marker_names_.size());
        auto request = std::make_shared<reachability_msgs::srv::GenerateReachPoses::Request>();
 
       // Get feedback poses
@@ -64,13 +64,13 @@ void MarkersGetReachPoses::processFeedback( const visualization_msgs::msg::Inter
       while (!client_->wait_for_service(1s)) {
       
         if (!rclcpp::ok()) {
-          RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+          RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
           return;
         }
-        RCLCPP_WARN(node_->get_logger(), "service not available, waiting again...");
+        RCLCPP_WARN(this->get_logger(), "service not available, waiting again...");
       }
     
-      RCLCPP_INFO(node_->get_logger(), "Sending request for manipulation task plan");
+      RCLCPP_INFO(this->get_logger(), "Sending request for manipulation task plan");
       auto result = client_->async_send_request(request, 
                        std::bind(&MarkersGetReachPoses::client_cb, this, std::placeholders::_1));
      // Do not wait for result or crash. No nested wait spinning
@@ -96,9 +96,9 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
   auto status = _future.wait_for(1s);
   if (status == std::future_status::ready)
   {
-      RCLCPP_INFO(node_->get_logger(), "Status is ready?");
+      RCLCPP_INFO(this->get_logger(), "Status is ready?");
       auto response = _future.get();
-      RCLCPP_INFO(node_->get_logger(), "Got response with %lu solutions", response->ee_poses.size());
+      RCLCPP_INFO(this->get_logger(), "Got response with %lu solutions", response->ee_poses.size());
 
     visualization_msgs::msg::MarkerArray md;
     visualization_msgs::msg::Marker mdi;
@@ -107,12 +107,12 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
     publisher_marker_->publish(md);
     usleep(0.1*1e6);
 
-    //RCLCPP_INFO(node_->get_logger(), "Showing %ld solutions", response->solutions.size());
+    //RCLCPP_INFO(this->get_logger(), "Showing %ld solutions", response->solutions.size());
     int id = 0;
     visualization_msgs::msg::MarkerArray ma;
     for(auto pi : response->ee_poses)
     {
-      //RCLCPP_INFO(node_->get_logger(), "EE Pose: %f %f %f", pi.pose.position.x, pi.pose.position.y, pi.pose.position.z);
+      //RCLCPP_INFO(this->get_logger(), "EE Pose: %f %f %f", pi.pose.position.x, pi.pose.position.y, pi.pose.position.z);
 
       visualization_msgs::msg::Marker mi;
       createArrowMarker(mi, id, pi);
@@ -134,9 +134,9 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
 void MarkersGetReachPoses::createArrowMarker(visualization_msgs::msg::Marker &_marker, 
                                              const int &_id, 
                                              const geometry_msgs::msg::PoseStamped &_pi)
-{  RCLCPP_WARN(node_->get_logger(), "arrow with header: %s", _pi.header.frame_id.c_str());
+{  RCLCPP_WARN(this->get_logger(), "arrow with header: %s", _pi.header.frame_id.c_str());
    _marker.header.frame_id = _pi.header.frame_id;
-   _marker.header.stamp = node_->now();
+   _marker.header.stamp = this->now();
    _marker.ns = "ee_pose";
    _marker.id = _id;
    _marker.type = visualization_msgs::msg::Marker::ARROW;
@@ -163,7 +163,7 @@ void MarkersGetReachPoses::createArrowMarker(visualization_msgs::msg::Marker &_m
   ps.x = pe.x - 0.0*length;
   ps.y = pe.y - 0.0*length;
   ps.z = pe.z - 1.0*length;
-  //RCLCPP_WARN(node_->get_logger(), "Point s: %f %f %f, point g: %f %f %f", ps.x, ps.y, ps.z, pe.x, pe.y, pe.z);
+  //RCLCPP_WARN(this->get_logger(), "Point s: %f %f %f, point g: %f %f %f", ps.x, ps.y, ps.z, pe.x, pe.y, pe.z);
   
   _marker.points.push_back(ps);
   _marker.points.push_back(pe);

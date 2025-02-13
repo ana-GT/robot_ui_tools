@@ -7,23 +7,13 @@
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("markers_get_robot_base_node");
+  std::string server_name = "robot_task";
+  auto get_robot_base = std::make_shared<MarkersGetRobotBase>(server_name);
 
-  std::string group;
-
-  group = node->declare_parameter("group", "");
-  if(group.empty())
-  {
-    RCLCPP_ERROR(node->get_logger(), "group parameter was not read!");
-    return 0;
-  }
-  RCLCPP_WARN(node->get_logger(), "group parameter: %s \n", group.c_str() );
+  get_robot_base->init();
   
-  MarkersGetRobotBase mgrb(node);
-  mgrb.init(group);
-  
-  rclcpp::spin(node);
-  mgrb.stop();
+  rclcpp::spin(get_robot_base);
+  get_robot_base->stop();
   rclcpp::shutdown();
 }
 

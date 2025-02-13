@@ -16,7 +16,7 @@
 
 #include <Eigen/Geometry>
 
-#include <reachability_msgs/srv/set_robot_pose.hpp>
+#include <robot_sim_msgs/srv/set_robot_pose.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
 #include <math.h>
@@ -27,12 +27,12 @@
 /**
  * @class RobotTaskMarkers
  */
-class RobotTaskMarkers
+class RobotTaskMarkers : public rclcpp::Node
 {
 public:
-  RobotTaskMarkers(rclcpp::Node::SharedPtr _nh);
-  void init(const std::string &_group);
-  virtual void init_(const std::string &_group) = 0;
+  RobotTaskMarkers(const std::string &_server_name);
+  bool init();
+  virtual bool init_(const std::string &_group) = 0;
   void stop();
   
 protected:
@@ -76,7 +76,6 @@ protected:
   void createTaskMarkers();
 
   // Parameters
-  rclcpp::Node::SharedPtr node_;
   std::unique_ptr<interactive_markers::InteractiveMarkerServer> server_;
   interactive_markers::MenuHandler menu_handler_;
   
@@ -86,6 +85,6 @@ protected:
   std::string reference_frame_;
 
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_js_;
-  rclcpp::Client<reachability_msgs::srv::SetRobotPose>::SharedPtr client_move_base_;
+  rclcpp::Client<robot_sim_msgs::srv::SetRobotPose>::SharedPtr client_move_base_;
 };
 

@@ -4,8 +4,8 @@
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
-MarkersGetRobotBase::MarkersGetRobotBase(rclcpp::Node::SharedPtr _node) :
-RobotTaskMarkers(_node)
+MarkersGetRobotBase::MarkersGetRobotBase(const std::string &_server_name) :
+RobotTaskMarkers(_server_name)
 {
 
 }
@@ -14,18 +14,18 @@ RobotTaskMarkers(_node)
 /**
  * @function init
  */
-void MarkersGetRobotBase::init_(const std::string &_chain_group)
+bool MarkersGetRobotBase::init_(const std::string &_chain_group)
 {
   // Services to use to call reachability-related queries
-  client_ = node_->create_client<reachability_msgs::srv::MoveRobotToTask>("robot_to_task");
-
+  client_ = this->create_client<robot_sim_msgs::srv::MoveRobotToTask>("robot_to_task");
 
   // Interactive marker stuff
   menu_handler_.insert( "Get Robot pose", std::bind(&MarkersGetRobotBase::processFeedback, this, _1));
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "Submenu" );
   menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&MarkersGetRobotBase::processFeedback, this, _1));
   menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&MarkersGetRobotBase::processFeedback, this, _1));
-
+  
+  return true;
 }
 
 
@@ -48,9 +48,9 @@ void MarkersGetRobotBase::processFeedback( const visualization_msgs::msg::Intera
   {
   case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
-      RCLCPP_INFO_STREAM( node_->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked");      
+      RCLCPP_INFO_STREAM( this->get_logger(), s.str() << ": menu item " << feedback->menu_entry_id << " clicked");      
 
-       auto request = std::make_shared<reachability_msgs::srv::MoveRobotToTask::Request>();
+       auto request = std::make_shared<robot_sim_msgs::srv::MoveRobotToTask::Request>();
 
       // Get feedback poses
       for(int i = 0; i < marker_names_.size(); ++i)
@@ -69,13 +69,13 @@ void MarkersGetRobotBase::processFeedback( const visualization_msgs::msg::Intera
       while (!client_->wait_for_service(1s)) {
       
         if (!rclcpp::ok()) {
-          RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+          RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
           return;
         }
-        RCLCPP_WARN(node_->get_logger(), "service not available, waiting again...");
+        RCLCPP_WARN(this->get_logger(), "service not available, waiting again...");
       }
     
-      RCLCPP_INFO(node_->get_logger(), "Sending request for manipulation task plan");
+      RCLCPP_INFO(this->get_logger(), "Sending request for manipulation task plan");
       auto result = client_->async_send_request(request, 
                        std::bind(&MarkersGetRobotBase::client_cb, this, std::placeholders::_1));
      // Do not wait for result or crash. No nested wait spinning
@@ -93,16 +93,16 @@ void MarkersGetRobotBase::processFeedback( const visualization_msgs::msg::Intera
   server_->applyChanges();
 }
 
-void MarkersGetRobotBase::client_cb(rclcpp::Client<reachability_msgs::srv::MoveRobotToTask>::SharedFuture _future)
+void MarkersGetRobotBase::client_cb(rclcpp::Client<robot_sim_msgs::srv::MoveRobotToTask>::SharedFuture _future)
 {
   auto status = _future.wait_for(1s);
   if (status == std::future_status::ready)
   {
-      RCLCPP_INFO(node_->get_logger(), "Status is ready?");
+      RCLCPP_INFO(this->get_logger(), "Status is ready?");
       auto response = _future.get();
-      RCLCPP_INFO(node_->get_logger(), "Got response with %lu solutions", response->solutions.size());
+      RCLCPP_INFO(this->get_logger(), "Got response with %lu solutions", response->solutions.size());
 
-    RCLCPP_INFO(node_->get_logger(), "Showing %ld solutions", response->solutions.size());
+    RCLCPP_INFO(this->get_logger(), "Showing %ld solutions", response->solutions.size());
     for(auto si : response->solutions)
     {
       showSolution(si);
@@ -118,17 +118,17 @@ void MarkersGetRobotBase::client_cb(rclcpp::Client<reachability_msgs::srv::MoveR
 /**
  * @function showSolution
  */
-void MarkersGetRobotBase::showSolution(reachability_msgs::msg::PlaceRobotSolution &_msg)
+void MarkersGetRobotBase::showSolution(robot_sim_msgs::msg::PlaceRobotSolution &_msg)
 {
     // Move base
-    //RCLCPP_INFO(node_->get_logger(), "Showing solutions: moving base and showing %d arm sols", _msg.chain_sols.size());
+    //RCLCPP_INFO(this->get_logger(), "Showing solutions: moving base and showing %d arm sols", _msg.chain_sols.size());
     moveBase(_msg.base_pose);
     // Update arm pose
-    for(auto cs : _msg.chain_sols)
-    {
-      pub_js_->publish(cs);
-      usleep(1.0*1e6);
-    }
+    //for(auto cs : _msg.chain_sols)
+   // {
+   //   pub_js_->publish(cs);
+   //   usleep(1.0*1e6);
+   // }
 }
 
 

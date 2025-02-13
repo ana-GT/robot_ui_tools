@@ -59,10 +59,23 @@ def generate_launch_description():
         arguments=['-d', rviz_full_config],
         output='screen')
 
+    move_base_cmd = Node(
+        package='robot_sim_tools',
+        executable='simulate_robot_base_motion',
+        name='simulate_robot_base_motion',
+        parameters=[{
+        'ref_frame': 'world',
+        'robot_frame': 'base_footprint',
+        'init_x': 0.0, 'init_y': 0.5, 'init_z': 0.0, 
+        'init_roll': 0.0, 'init_pitch': 0.0, 'init_yaw': 0.5}],
+        output='screen')
+    
+
     return LaunchDescription([
         rsp,
         joint_pub,
-        start_rviz_cmd
+        start_rviz_cmd,
+        move_base_cmd
     ])
     
     

@@ -9,21 +9,13 @@ int main(int argc, char* argv[])
   rclcpp::init(argc, argv);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("markers_get_reach_poses_node");
 
-  std::string group;
-
-  group = node->declare_parameter("group", "");
-  if(group.empty())
-  {
-    RCLCPP_ERROR(node->get_logger(), "group parameter was not read!");
-    return 0;
-  }
-  RCLCPP_WARN(node->get_logger(), "group parameter: %s \n", group.c_str() );
+  std::string server_name = "robot_task";
+  auto get_reach_poses = std::make_shared<MarkersGetReachPoses>(server_name);
   
-  MarkersGetReachPoses mgrp(node);
-  mgrp.init(group);
+  get_reach_poses->init();
   
-  rclcpp::spin(node);
-  mgrp.stop();
+  rclcpp::spin(get_reach_poses);
+  get_reach_poses->stop();
   rclcpp::shutdown();
 }
 

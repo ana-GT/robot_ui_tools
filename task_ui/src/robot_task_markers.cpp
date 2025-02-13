@@ -12,16 +12,16 @@ using namespace std::chrono_literals;
  * @function RobotTaskMarkers
  * @brief Constructor
  */
-RobotTaskMarkers::RobotTaskMarkers(rclcpp::Node::SharedPtr _nh) :
-  node_(_nh)
+RobotTaskMarkers::RobotTaskMarkers(const std::string &_server_name) :
+  Node("robot_task_markers")
 {
-  server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>("/task_marker",
-									   node_->get_node_base_interface(),
-									   node_->get_node_clock_interface(),
-									   node_->get_node_logging_interface(),
-									   node_->get_node_topics_interface(),
-									   node_->get_node_services_interface());
-
+  server_ = std::make_unique<interactive_markers::InteractiveMarkerServer>(_server_name,
+									   this->get_node_base_interface(),
+									   this->get_node_clock_interface(),
+									   this->get_node_logging_interface(),
+									   this->get_node_topics_interface(),
+									   this->get_node_services_interface());
+  this->declare_parameter("group", "");
 }
 
 void RobotTaskMarkers::stop()
@@ -29,35 +29,46 @@ void RobotTaskMarkers::stop()
   server_.reset();
 }
 
-void RobotTaskMarkers::init(const std::string &_chain_group)
+bool RobotTaskMarkers::init()
 {
+  std::string chain_group;
+ 
+  if( !this->get_parameter("group", chain_group) )
+  {
+    RCLCPP_ERROR(this->get_logger(), "group parameter was not set!");
+    return false;
+  }
+  RCLCPP_INFO(this->get_logger(), "group parameter: %s ", chain_group.c_str() );
+
+
   // To simulate arm motion and robot base moving
-  pub_js_ = node_->create_publisher<sensor_msgs::msg::JointState>("joint_state_command", 10);
-  client_move_base_ = node_->create_client<reachability_msgs::srv::SetRobotPose>("set_robot_pose");
+  pub_js_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_state_command", 10);
+  client_move_base_ = this->create_client<robot_sim_msgs::srv::SetRobotPose>("set_robot_pose");
 
   // Load
-  std::string param_prefix = "robot_task_ui_params." + _chain_group;
+  std::string param_prefix = "robot_task_ui_params." + chain_group;
 
   std::shared_ptr<robot_task_ui_params::ParamListener> param_listener;
-  param_listener = std::make_shared<robot_task_ui_params::ParamListener>(node_, param_prefix);
+  param_listener = std::make_shared<robot_task_ui_params::ParamListener>(this->shared_from_this(), param_prefix);
   params_ = param_listener->get_params();
 
   
   // Call derived class specific
-  init_(_chain_group);
+  if(!init_(chain_group))
+    return false;
 
   // Add menu handler to hide/show the gimbal
   interactive_markers::MenuHandler::EntryHandle sub_menu_handle = menu_handler_.insert( "View" );
   menu_handler_.insert( sub_menu_handle, "Hide/Show 6D gimbal", std::bind(&RobotTaskMarkers::switchGimbal, this, _1));
  
-
   // Create markers that represent the task
   // has to come AFTER init_ to attach menus accordingly
   createTaskMarkers();
   
- 
   // Update
   server_->applyChanges();
+   
+  return true;
 }
 
 void RobotTaskMarkers::switchGimbal( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
@@ -87,7 +98,7 @@ std::string RobotTaskMarkers::getTaskMarkerName(int i)
  */
 void RobotTaskMarkers::createTaskMarkers()
 {
-  RCLCPP_INFO_STREAM( node_->get_logger(), "Creating task markers" );
+  RCLCPP_INFO_STREAM( this->get_logger(), "Creating task markers" );
   reference_frame_ = params_.reference_frame; 
   std::vector<geometry_msgs::msg::Pose> marker_poses(2);
 
@@ -108,7 +119,7 @@ void RobotTaskMarkers::createTaskMarkers()
  * @function doubleArrayToPose
  */
 bool RobotTaskMarkers::doubleArrayToPose(const std::vector<double> &_arr, 
-                                      geometry_msgs::msg::Pose &_pose)
+                                         geometry_msgs::msg::Pose &_pose)
 {
   if(_arr.size() != 6)
   {
@@ -194,7 +205,7 @@ void RobotTaskMarkers::alignMarker( const visualization_msgs::msg::InteractiveMa
   pose.position.x = round(pose.position.x-0.5)+0.5;
   pose.position.y = round(pose.position.y-0.5)+0.5;
 
-  RCLCPP_INFO_STREAM( node_->get_logger(), feedback->marker_name << ":"
+  RCLCPP_INFO_STREAM( this->get_logger(), feedback->marker_name << ":"
       << " aligning position = "
       << feedback->pose.position.x
       << ", " << feedback->pose.position.y
@@ -428,16 +439,16 @@ void RobotTaskMarkers::saveMarker( visualization_msgs::msg::InteractiveMarker in
  */
 void RobotTaskMarkers::moveBase(const geometry_msgs::msg::PoseStamped &_pose)
 {
-  auto request = std::make_shared<reachability_msgs::srv::SetRobotPose::Request>();
+  auto request = std::make_shared<robot_sim_msgs::srv::SetRobotPose::Request>();
   request->pose = _pose;
 
   while (!client_move_base_->wait_for_service(1s)) {
       
     if (!rclcpp::ok()) {
-      RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
       return;
     }
-    RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
+    RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
   }
 
   auto result = client_move_base_->async_send_request(request);

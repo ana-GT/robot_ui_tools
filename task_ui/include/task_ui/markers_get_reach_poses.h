@@ -9,8 +9,8 @@ class MarkersGetReachPoses : public RobotTaskMarkers {
 
 public:
 
-  MarkersGetReachPoses(rclcpp::Node::SharedPtr _node);
-  void init_(const std::string &_group) override;
+  MarkersGetReachPoses(const std::string &_server_name);
+  bool init_(const std::string &_group) override;
   
 protected:
 

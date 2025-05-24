@@ -1,15 +1,11 @@
 /**
  * @file simple_placement_solver.cpp
  */
-#include <rclcpp/rclcpp.hpp>
-#include <robot_sim_msgs/srv/move_robot_to_task.hpp>
-#include <robot_sim_msgs/srv/set_robot_pose.hpp>
-#include <tf2_eigen_kdl/tf2_eigen_kdl.hpp>
-#include <tf2_eigen/tf2_eigen.hpp>
+#include <reachability_demos/simple_placement_solver.h>
+
 #include <algorithm>
 #include <cfloat>
 #include <nlopt.h>
-#include <trac_ik/trac_ik.hpp>
 
 //#include <reachability_description/reachability_description.h>
 //#include <reachability_description/reach_utilities.h>
@@ -91,26 +87,33 @@ double min_func(const std::vector<double> &x, std::vector<double>& grad, void* d
   return res;
 }
 
-/**
- * @class RobotToTask
- **/
-class RobotToTask : public rclcpp::Node
+bool withinZThresh(Eigen::Isometry3d _Tfx, double _x, double _y, double _z, double _thresh)
 {
- public:
+    return ( fabs(_z - _Tfx.translation()(2)) <= _thresh );
+}
 
-  // Constructor
-  RobotToTask() :
-    rclcpp::Node("robot_to_task")
-  {
+
+/**
+ * Constructor
+ */
+RobotToTask::RobotToTask() :
+rclcpp::Node("robot_to_task")
+{
     //this->declare_parameter("chain_group_name", std::string(""));
     this->declare_parameter("robot_name", std::string(""));
     this->declare_parameter("chain_root_link", std::string(""));
-    this->declare_parameter("chain_tip_link", std::string(""));    
-  }
+    this->declare_parameter("chain_tip_link", std::string(""));
+    this->declare_parameter("robot_base_frame", std::string(""));    
+}
 
-  // Initialize
-  bool initialize()
-  {
+/*
+ * Initialize
+ */
+bool RobotToTask::initialize()
+{
+    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
 //     this->get_parameter("chain_group_name", chain_group_);
      if(!this->get_parameter("robot_name", robot_name_))
        return false;
@@ -120,17 +123,27 @@ class RobotToTask : public rclcpp::Node
        
      if(!this->get_parameter("chain_tip_link", chain_tip_link_))
        return false;
+
+     if(!this->get_parameter("robot_base_frame", robot_base_frame_))
+       return false;
             
-     //if( chain_group_.empty() || robot_name_.empty() )
-     //  return false;
+     if( chain_root_link_.empty() || chain_tip_link_.empty() || robot_base_frame_.empty() )
+       return false;
 
     double ik_max_time = 0.005;
     double ik_epsilon = 0.001;
     TRAC_IK::SolveType ik_type = TRAC_IK::SolveType::Speed;
      
-    ik_solver.reset( new TRAC_IK::TRAC_IK(this->shared_from_this(), chain_root_link_, chain_tip_link_, 
+    ik_solver_.reset( new TRAC_IK::TRAC_IK(this->shared_from_this(), chain_root_link_, chain_tip_link_, 
                    "robot_description", 
                    ik_max_time, ik_epsilon, ik_type));
+
+    // Create IK and FK solver
+    ik_solver_->getKDLChain(chain_);
+    unsigned int num_joints = chain_.getNrOfJoints();
+    unsigned int num_segments = chain_.getNrOfSegments();
+    fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
+
 
     //rd_->addKinematicSolvers(_chain_group);
 
@@ -149,11 +162,12 @@ class RobotToTask : public rclcpp::Node
      //opt_.set_upper_bounds(x_upper_bounds);
 
     return true;
- }
+}
 
-
-// Offer service to get pose
-bool setServices()
+/**
+ * Offer service to get pose
+ */
+bool RobotToTask::setServices()
 {
     using std::placeholders::_1;
     using std::placeholders::_2;
@@ -163,14 +177,11 @@ bool setServices()
     return true;
 }
 
-bool withinZThresh(Eigen::Isometry3d _Tfx, double _x, double _y, double _z, double _thresh)
-{
-    return ( fabs(_z - _Tfx.translation()(2)) <= _thresh );
-}
 
-
-// Handle service
-void handleSrv(const std::shared_ptr<robot_sim_msgs::srv::MoveRobotToTask::Request> req,
+/**
+ * Handle service
+ */
+void RobotToTask::handleSrv(const std::shared_ptr<robot_sim_msgs::srv::MoveRobotToTask::Request> req,
                std::shared_ptr<robot_sim_msgs::srv::MoveRobotToTask::Response> res)
 {
     RCLCPP_INFO(this->get_logger(), "Received service to send robot to task!!!");
@@ -180,41 +191,103 @@ void handleSrv(const std::shared_ptr<robot_sim_msgs::srv::MoveRobotToTask::Reque
 
   // 1. Get all voxels that have a Z value in a threshold of this z
   // Only use 1 for now
-  Eigen::Isometry3d Tfx;
-  tf2::fromMsg(req->tcp_poses[0].pose, Tfx);
-  double z_task = Tfx.translation()(2);
+  Eigen::Isometry3d Tf_world_ee_goal;
+  tf2::fromMsg(req->tcp_poses[0].pose, Tf_world_ee_goal);
 
-   std::vector<std::pair<int, int> > distances;
+  std::vector<std::pair<int, int> > distances;
+      
+   Eigen::Isometry3d Tf_base_root;   
+   getTransform(robot_base_frame_, chain_root_link_, Tf_base_root);   
    
-   // 
+   Eigen::Isometry3d Tf_world_base_guess, Tf_root_ee;
+   geometry_msgs::msg::Pose msg_world_base_guess;
+
+   // FK()
+   // "torso_lift_joint", "arm_1_joint", "arm_2_joint", "arm_3_joint", "arm_4_joint", "arm_5_joint", "arm_6_joint", "arm_7_joint"
+   Eigen::VectorXd js(8);
+   js << 0.0, 0.27, -0.165, -1.827, 2.07, 1.18, -0.65, -1.04;
+   getFK(js, Tf_root_ee);
+   
+    // First guess: 
+   Tf_world_base_guess = Tf_world_ee_goal * Tf_root_ee.inverse() * Tf_base_root.inverse();
+   
+   // Project
+   projectConstraints(Tf_world_base_guess);
+   // Try IK
+   //FK  = Tf_base_root.inverse()* Tf_world_base_guess.inverse() * Tf_world_ee_goal;
+   //ik_solver_->
+   
+   msg_world_base_guess = tf2::toMsg(Tf_world_base_guess);
+   
    res->success = true;
    robot_sim_msgs::msg::PlaceRobotSolution sol;
-   sol.base_pose = req->tcp_poses[0];
+   sol.base_pose.pose = msg_world_base_guess;
    //sol.chain_sols = ;
    res->solutions.push_back(sol);
  
 }
 
- protected:
- 
- rclcpp::Service<robot_sim_msgs::srv::MoveRobotToTask>::SharedPtr srv_;
-
- std::vector<int> higher_indices_;
- double above_ratio_;
- double below_z_comp_ = 0.1;
-
- //nlopt::opt opt_;
-
-   // Read parameters
-   std::string chain_group_;
-   std::string robot_name_;
+bool RobotToTask::projectConstraints(Eigen::Isometry3d &_Tfs)
+{
+   Eigen::Vector3d zs, zg;
    
-   std::string chain_root_link_;
-   std::string chain_tip_link_;
-      
-   std::shared_ptr<TRAC_IK::TRAC_IK> ik_solver;
-};
+   // 1. Get Z current
+   zs = _Tfs.linear().col(2);
+   zg = Eigen::Vector3d(0,0,1);
+   
+   // 2. Calculate rotation to Z(1,0,0)
+   Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(zs, zg);
+   
+   // 3. Apply rotation
+   _Tfs.linear() = q * _Tfs.linear();
+   
+   // 4. Project to floor
+   _Tfs.translation()(2) = 0.0;
+   return true;   
+}
 
+/**
+ * @function getTransform // (-0.062, 0.0, 0.291);
+ */
+bool RobotToTask::getTransform(const std::string &_source, const std::string &_target, Eigen::Isometry3d &_Tfx)
+{
+   geometry_msgs::msg::TransformStamped tfxs;
+   try
+   {
+      tfxs = tf_buffer_->lookupTransform(_source, _target, rclcpp::Time(0), rclcpp::Duration(1, 0));
+   }
+   catch (tf2::TransformException& ex)
+   {
+      RCLCPP_ERROR_STREAM(this->get_logger(), "No transform from " << _source << " to " << _target
+                                                       << ".  Error: " << ex.what());
+      return false;
+   }
+   
+   _Tfx = tf2::transformToEigen(tfxs);
+   return true;
+}
+
+/** 
+ * @function getFK
+ */
+bool RobotToTask::getFK( const Eigen::VectorXd &_qs, Eigen::Isometry3d &_Tfx)
+{
+   if(_qs.rows() != chain_.getNrOfJoints())
+   {  
+      RCLCPP_ERROR(this->get_logger(), "FK input argument has wrong size: %d, should be %d", _qs.rows(), chain_.getNrOfJoints());
+      return false;
+   }
+   
+   KDL::JntArray q;
+   q.data = _qs;
+   
+   KDL::Frame Tf_kdl;
+   if( fk_solver_->JntToCart(q, Tf_kdl) < 0 )
+     return false;
+     
+   tf2::transformKDLToEigen(Tf_kdl, _Tfx);
+   return true;
+}
 
 ////////////////////////////////////
 
@@ -222,15 +295,13 @@ int main(int argc, char* argv[])
 {
    rclcpp::init(argc, argv);
    std::shared_ptr<RobotToTask> rtt = std::make_shared<RobotToTask>();
-   RCLCPP_INFO(rtt->get_logger(), "Start node...");
 
-  RCLCPP_INFO(rtt->get_logger(), "Initializing...");
   if(!rtt->initialize())
     return 1;
-  RCLCPP_INFO(rtt->get_logger(), "Set services...");
+
   // Offer service
   rtt->setServices();
-  RCLCPP_INFO(rtt->get_logger(), "Start spinning...");
+
   rclcpp::spin(rtt);
   rclcpp::shutdown();
   return 0;    

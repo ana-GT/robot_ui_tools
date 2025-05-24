@@ -7,8 +7,6 @@
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("markers_get_reach_poses_node");
-
   std::string server_name = "robot_task";
   auto get_reach_poses = std::make_shared<MarkersGetReachPoses>(server_name);
   

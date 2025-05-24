@@ -97,8 +97,9 @@ def generate_launch_description():
             {"robot_name": "tiago"},
             rtu_params,
             {"robot_description": urdf_config},
-            {"chain_root_link": "torso_lift_link"},
-            {"chain_tip_link": "arm_tool_link"}
+            {"chain_root_link": "torso_fixed_link"}, # torso_lift_link
+            {"chain_tip_link": "arm_tool_link"},
+            {"robot_base_frame": "base_footprint"}
         ]
     )    
 

@@ -1,21 +1,20 @@
 cmake_minimum_required(VERSION 3.16)
-project(robot_sim_tools)
+project(reachability_demos)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
     set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
 endif()
 
+find_package(ament_cmake REQUIRED)
 set(DEPS 
-  ament_cmake
   rclcpp
-  trac_ik_lib
-  urdf
-  srdfdom
+  tf2_ros
   tf2_eigen
   tf2_eigen_kdl
   tf2_kdl
-  robot_sim_msgs
   tf2_geometry_msgs
+  reachability_msgs
+  reachability_description
 )
 
 foreach(dependency IN ITEMS ${DEPS})
@@ -37,6 +36,9 @@ ament_target_dependencies(simulate_robot_base_motion ${DEPS})
 add_executable(simple_placement_solver src/simple_placement_solver.cpp)
 ament_target_dependencies(simple_placement_solver ${DEPS})
 
+add_executable(simple_reachability_query src/simple_reachability_query.cpp)
+ament_target_dependencies(simple_reachability_query ${DEPS})
+
 
 install(
   DIRECTORY include/
@@ -46,6 +48,7 @@ install(
 install(TARGETS 
   simulate_robot_base_motion
   simple_placement_solver
+  simple_reachability_query
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -56,9 +59,9 @@ install(DIRECTORY launch #config
   DESTINATION share/${PROJECT_NAME}/
 )
 
-ament_export_libraries(
+#ament_export_libraries(
 #    ${PROJECT_NAME}
-)
+#)
 
 #ament_export_targets(
 #  reachability_generation_node

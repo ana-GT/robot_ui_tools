@@ -1,0 +1,12 @@
+# This places the tiago’s arm tucked under it’s head, fairly close to the body.
+/**:
+  
+  ros__parameters:
+
+    zeros.arm_1_joint: 0.13
+    zeros.arm_2_joint": -0.73
+    zeros.arm_3_joint: -1.14
+    zeros.arm_4_joint: 1.82 
+    zeros.arm_5_joint: 0.94
+    zeros.arm_6_joint: -1.19
+    zeros.arm_7_joint: -0.06    

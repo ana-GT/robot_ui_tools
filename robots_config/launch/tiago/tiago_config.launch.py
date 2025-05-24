@@ -43,11 +43,13 @@ def generate_launch_description():
                output='both',
                parameters=[{'robot_description': urdf_config}])
 
-
+    zeros_yaml = os.path.join(get_package_share_directory('robots_config'), 'config',
+                             'tiago', 'zeros.yaml')
     joint_pub = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
+        parameters=[zeros_yaml],
         output='screen')
 
     rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
@@ -59,14 +61,14 @@ def generate_launch_description():
         arguments=['-d', rviz_full_config],
         output='screen')
 
-    move_base_cmd = Node(
+    move_base = Node(
         package='robot_sim_tools',
         executable='simulate_robot_base_motion',
         name='simulate_robot_base_motion',
         parameters=[{
         'ref_frame': 'world',
         'robot_frame': 'base_footprint',
-        'init_x': 0.0, 'init_y': 0.5, 'init_z': 0.0, 
+        'init_x': 0.0, 'init_y': 0.0, 'init_z': 0.0, 
         'init_roll': 0.0, 'init_pitch': 0.0, 'init_yaw': 0.5}],
         output='screen')
     
@@ -75,7 +77,7 @@ def generate_launch_description():
         rsp,
         joint_pub,
         start_rviz_cmd,
-        move_base_cmd
+        move_base
     ])
     
     

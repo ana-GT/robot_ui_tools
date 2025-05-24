@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>robot_sim_tools</name> 
+  <name>reachability_demos</name> 
   <version>1.0.0</version>
   <description>
-    Tool to simulate robot motion
+    Tool to test reachability usefulness and simulate robot motion
   </description>
   <author>Ana C. Huaman Quispe</author>
   <maintainer email="mecanita@gmail.com">Ana C. Huaman Quispe</maintainer>
@@ -14,6 +14,7 @@
   <depend>rclcpp</depend>
 
   <depend>eigen</depend>
+  <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_eigen_kdl</depend>
   <depend>tf2_kdl</depend>
@@ -24,7 +25,8 @@
   <depend>pkg-config</depend>
   <depend>robot_sim_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
-  
+  <depend>reachability_msgs</depend>
+  <depend>reachability_description</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

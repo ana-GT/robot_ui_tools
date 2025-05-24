@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot name="clearpath_jaco" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--Import the platform -->
+  <xacro:include filename="$(find clearpath_platform_description)/urf/j100/j100.urdf.xacro"/>
+
+  <!-- Import an arm -->
+  <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/>
+
+  <!-- Joint arm and husky -->
+  <joint name="base_arm" type="fixed">
+      <origin rpy="0 0 0" xyz="0.25 0 0"/>
+      <parent link="top_plate_link"/>
+      <child link="base"/>
+  </joint>
+
+
+
+  <!-- TCP link-->
+  <!--<link name="fr3_tcp_link" />
+  <joint name="tcp_joint" type="fixed">
+      <origin rpy="0 0 1.5708" xyz="0 0 0"/>
+      <parent link="fr3_hand_tcp"/>
+      <child link="fr3_tcp_link"/>
+  </joint>-->
+
+</robot>

@@ -1,0 +1,13 @@
+# This places the fetch’s arm tucked under it’s head, fairly close to the body.
+/**:
+  
+  ros__parameters:
+
+    zeros.shoulder_pan_joint: -1.02
+    zeros.shoulder_lift_joint: 1.35
+    zeros.upperarm_roll_joint: -2.58
+    zeros.elbow_flex_joint: -1.85
+    zeros.forearm_roll_joint: 0.11
+    zeros.wrist_flex_joint: -1.42
+    zeros.wrist_roll_joint: 0.14
+    zeros.torso_lift_joint: 0.20

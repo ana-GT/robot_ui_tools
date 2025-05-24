@@ -27,6 +27,7 @@ bool MarkersGetReachPoses::init_(const std::string &_chain_group)
   //menu_handler_.insert( sub_menu_handle, "First Entry", std::bind(&MarkersGetRobotBase::processFeedback, this, _1));
   //menu_handler_.insert( sub_menu_handle, "Second Entry", std::bind(&MarkersGetRobotBase::processFeedback, this, _1));
 
+  return true;
 }
 
 
@@ -98,7 +99,6 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
   {
       RCLCPP_INFO(this->get_logger(), "Status is ready?");
       auto response = _future.get();
-      RCLCPP_INFO(this->get_logger(), "Got response with %lu solutions", response->ee_poses.size());
 
     visualization_msgs::msg::MarkerArray md;
     visualization_msgs::msg::Marker mdi;
@@ -107,7 +107,7 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
     publisher_marker_->publish(md);
     usleep(0.1*1e6);
 
-    //RCLCPP_INFO(this->get_logger(), "Showing %ld solutions", response->solutions.size());
+    RCLCPP_INFO(this->get_logger(), "Showing %ld solutions, js: %d", response->ee_poses.size(), response->joint_states.size());
     int id = 0;
     visualization_msgs::msg::MarkerArray ma;
     for(auto pi : response->ee_poses)

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(task_ui)
 
-find_package(ament_cmake REQUIRED)
-
 set(DEPS
   trac_ik_lib
   geometry_msgs

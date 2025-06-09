@@ -6,27 +6,31 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration
 from launch_ros.actions import Node
-
+from launch.conditions import IfCondition, UnlessCondition
+import xacro
 
 def generate_launch_description():
 
-    fetch_urdf_file = os.path.join(get_package_share_directory('fetch_description'), 'robots',
-                                     'fetch.urdf')
-    robot_description = open(fetch_urdf_file).read()
+    launch_args = [
+        DeclareLaunchArgument(name="rviz", default_value="True"),
+    ]
 
-    rviz_file = os.path.join(get_package_share_directory('robots_config'), 'rviz',
-                             'fetch.rviz')
+    # Urdf
+    rc_dir = get_package_share_directory("robots_config")
+    urdf_string = xacro.process_file(os.path.join(rc_dir, 'robots/fetch/fetch.urdf.xacro'))
+    robot_description = {"robot_description": urdf_string.toxml()}
 
+    # Robot state publisher
     rsp = Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen',
-            parameters=[{'robot_description': robot_description}],
+            parameters=[robot_description],
     )
 
-    zeros_yaml = os.path.join(get_package_share_directory('robots_config'), 'config',
-                             'fetch', 'zeros.yaml')
+    # Joint state publisher
+    zeros_yaml = os.path.join(rc_dir, 'config/fetch/zeros.yaml')
     jsp = Node(
             package='joint_state_publisher',
             executable='joint_state_publisher',
@@ -38,7 +42,8 @@ def generate_launch_description():
              }],
             output='screen'
     )
-    
+
+    # Move base simulation
     move_base = Node(
             package='reachability_demos',
             executable='simulate_robot_base_motion',
@@ -55,15 +60,17 @@ def generate_launch_description():
                       }]
     )
 
-    
+    # Rviz
+    rviz_file = os.path.join(rc_dir, 'rviz/fetch.rviz')    
     rviz = Node(package='rviz2',
              executable='rviz2',
              name='rviz2',
-             arguments=['--display-config', rviz_file]
+             arguments=['--display-config', rviz_file],
+             condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
 
-    return LaunchDescription([
+    return LaunchDescription(launch_args + [
       rsp,
       jsp,
       move_base,

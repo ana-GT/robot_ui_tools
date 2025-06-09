@@ -25,4 +25,14 @@
     <xacro:fr3_arm_hand arm_id="${arm_id}"/>
   </xacro:if>
   
+      <group_state name="panda_default" group="$(arg arm_id)_manipulator">
+        <joint name="$(arg arm_id)_joint1" value="0.0" />
+        <joint name="$(arg arm_id)_joint2" value="0.0" />
+        <joint name="$(arg arm_id)_joint3" value="0.0" />
+        <joint name="$(arg arm_id)_joint4" value="-1.5708" />
+        <joint name="$(arg arm_id)_joint5" value="0.0" />
+        <joint name="$(arg arm_id)_joint6" value="-1.5708" />
+        <joint name="$(arg arm_id)_joint7" value="0.0" />                                        
+    </group_state>
+  
 </robot>

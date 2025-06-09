@@ -11,46 +11,49 @@ import xacro
 
 def generate_launch_description():
 
-    robot_description_config = xacro.process_file(
-        os.path.join(
-            get_package_share_directory("robots_config"),
-            "robots", "panda",
-            "panda.urdf.xacro",
-        ),
+    launch_args = [
+        DeclareLaunchArgument(name="rviz", default_value="True"),
+    ]
+
+    # Urdf
+    rc_dir = get_package_share_directory("robots_config")
+    urdf_string = xacro.process_file(
+        os.path.join(rc_dir, "robots/panda/panda.urdf.xacro"),
         mappings ={'hand': 'true'}
+    )    
+    robot_description = {"robot_description": urdf_string.toxml()}
+
+    # Robot state publisher
+    rsp = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        name="robot_state_publisher",
+        output="both",
+        parameters=[robot_description],
     )
     
-    robot_description = {"robot_description": robot_description_config.toxml()}
-
-    srdf_file = os.path.join(get_package_share_directory('robots_config'),'config',
-                                              'panda',
-                                              'srdf',
-                                              'panda_arm.srdf.xacro')
-
-
-    srdf_config = Command(
-        [FindExecutable(name='xacro'), ' ', srdf_file, ' hand:=true']
-    )
-    robot_description_semantic = {
-        'robot_description_semantic': srdf_config
-    }
-
+    # Joint State publisher
     panda_zero_joints = {
       "zeros.fr3_joint4": -1.5708,
       "zeros.fr3_joint6": 1.5708 	
     }
+    jsp = Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        name='joint_state_publisher',
+        parameters=[panda_zero_joints],
+        output='screen')
 
-    rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
-    rviz_full_config = os.path.join(rviz_base, "panda.rviz")
-    rviz_node = Node(
+    # Rviz
+    rviz_config = os.path.join(rc_dir, "rviz/panda.rviz")
+    rviz = Node(
         package="rviz2",
         executable="rviz2",
         name="rviz2",
         output="log",
-        arguments=["-d", rviz_full_config],
+        arguments=["-d", rviz_config],
         parameters=[
-        robot_description #,
-#        robot_description_semantic
+        robot_description
         ]
     )
 
@@ -63,30 +66,7 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "base"],
     )
 
-    # Publish TF
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        output="both",
-        parameters=[robot_description],
-    )
-    
-    # Joint State publisher
-    joint_publisher = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        parameters=[panda_zero_joints],
-        output='screen')
-
-
     return LaunchDescription(
-        [
-            rviz_node,
-            static_tf,
-            robot_state_publisher,
-            joint_publisher
-        ]
-
+        launch_args +
+        [rsp, jsp, rviz, static_tf]
     )

@@ -8,17 +8,20 @@ from launch_pal.include_utils import include_launch_py_description
 
 from launch.substitutions import Command, PathJoinSubstitution, PythonExpression, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare, ExecutableInPackage
+from launch.conditions import IfCondition
+from launch.actions import DeclareLaunchArgument
+
 from pathlib import Path
 
 def generate_launch_description():
 
-    xacro_file_path = Path(
-        os.path.join(
-            get_package_share_directory("robots_config"),
-            "robots", 'tiago',
-            "tiago.urdf.xacro",
-        )
-    )
+    launch_args = [
+        DeclareLaunchArgument(name="rviz", default_value="True"),
+    ]
+
+    # URDF
+    robot_config = get_package_share_directory("robots_config")
+    xacro_file_path = Path(os.path.join(robot_config, "robots/tiago/tiago.urdf.xacro"))
 
     xacro_input_args = {
         "arm_type": "tiago-arm",
@@ -28,56 +31,56 @@ def generate_launch_description():
         "laser_model": "sick-571",
         "wrist_model": "wrist-2010",
         "base_type": "pmb2",
-        "has_screen": False,
-#        "use_sim_time": False,
-#        "is_public_sim": True,
-#        "namespace": read_launch_argument("namespace", context),
+        "has_screen": False
     }
-    urdf_config = load_xacro(xacro_file_path, xacro_input_args)
-    
-    
-    parameters = {'robot_description': urdf_config}
+    urdf_config = load_xacro(xacro_file_path, xacro_input_args)    
+    robot_description = {'robot_description': urdf_config}
 
+    # Robot state publisher
     rsp = Node(package='robot_state_publisher',
                executable='robot_state_publisher',
                output='both',
-               parameters=[{'robot_description': urdf_config}])
+               parameters=[robot_description])
 
-    zeros_yaml = os.path.join(get_package_share_directory('robots_config'), 'config',
-                             'tiago', 'zeros.yaml')
-    joint_pub = Node(
+    # Joint state publisher
+    zeros_yaml = os.path.join(robot_config, 'config/tiago/zeros.yaml')
+    jsp = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
         parameters=[zeros_yaml],
         output='screen')
 
-    rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
-    rviz_full_config = os.path.join(rviz_base, "tiago.rviz")
-    start_rviz_cmd = Node(
+    # Rviz
+    rviz_full_config = os.path.join(robot_config, "rviz/tiago.rviz")
+    rviz = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
         arguments=['-d', rviz_full_config],
-        output='screen')
+        output='screen',
+        condition=IfCondition(LaunchConfiguration('rviz')))
 
+    # Move base simulation
     move_base = Node(
-        package='robot_sim_tools',
+        package='reachability_demos',
         executable='simulate_robot_base_motion',
         name='simulate_robot_base_motion',
+        output='screen',
         parameters=[{
         'ref_frame': 'world',
         'robot_frame': 'base_footprint',
         'init_x': 0.0, 'init_y': 0.0, 'init_z': 0.0, 
-        'init_roll': 0.0, 'init_pitch': 0.0, 'init_yaw': 0.5}],
-        output='screen')
+        'init_roll': 0.0, 'init_pitch': 0.0, 'init_yaw': 0.0}]
+    )
     
 
-    return LaunchDescription([
+    return LaunchDescription(
+        launch_args + [
         rsp,
-        joint_pub,
-        start_rviz_cmd,
-        move_base
+        jsp,
+        move_base,
+        rviz
     ])
     
     

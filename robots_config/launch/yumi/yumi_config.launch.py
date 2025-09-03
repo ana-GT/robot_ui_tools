@@ -31,14 +31,18 @@ def load_yaml(package_name, file_path):
     except EnvironmentError:
         return None
 
-
+##########################################
 def generate_launch_description():
 
+    launch_args = [
+        DeclareLaunchArgument(name="rviz", default_value="True"),
+    ]
+
+    # Urdf  
+    rc_dir = get_package_share_directory("robots_config")
+    
     robot_description_config = xacro.process_file(
-        os.path.join(
-            get_package_share_directory("yumi_description"),
-            "urdf",
-            "yumi.urdf.xacro",
+        os.path.join(rc_dir, "robots/yumi/yumi.urdf.xacro",
         ),
         in_order = False,
         mappings = {'arms_interface': 'VelocityJointInterface', 
@@ -47,13 +51,16 @@ def generate_launch_description():
     )
     robot_description = {"robot_description": robot_description_config.toxml()}
 
-#    robot_description_semantic_config = load_file(
-#        "moveit_resources_panda_moveit_config", "config/panda.srdf"
-#    )
-#    robot_description_semantic = {
-#        "robot_description_semantic": robot_description_semantic_config
-#    }
-
+    # Robot state publisher
+    rsp = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        name="robot_state_publisher",
+        output="both",
+        parameters=[robot_description],
+    )
+    
+    # Joint State publisher
     yumi_zero_joints = { 
         "zeros": {
           "yumi_joint_1_l": 0, 
@@ -73,44 +80,25 @@ def generate_launch_description():
        }
     }
 
-    rviz_base = os.path.join(get_package_share_directory("robots_config"), "rviz")
-    rviz_full_config = os.path.join(rviz_base, "yumi.rviz")
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_full_config],
-        parameters=[
-        robot_description #,
-#        robot_description_semantic
-        ]
-    )
-
-    # Publish TF
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        output="both",
-        parameters=[robot_description],
-    )
-    
-    # Joint State publisher
-    joint_publisher = Node(
+    jsp = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
         parameters=[yumi_zero_joints],
         output='screen')
 
+    # Rviz
+    rviz_full_config = os.path.join(rc_dir, "rviz/yumi.rviz")
+    rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_full_config],
+    )
+
 
     return LaunchDescription(
-        [
-            rviz_node,
-#            static_tf,
-            robot_state_publisher,
-            joint_publisher
-        ]
-
+        launch_args +
+        [rviz, rsp, jsp]
     )

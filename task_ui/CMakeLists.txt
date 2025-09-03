@@ -47,11 +47,25 @@ add_library(robot_task_markers SHARED src/robot_task_markers.cpp)
 target_link_libraries(robot_task_markers ${ROBOT_TASK_UI_PARAM_LIB})
 ament_target_dependencies(robot_task_markers ${DEPS})
 
-add_executable(markers_get_robot_base_node src/markers_get_robot_base_node.cpp src/markers_get_robot_base.cpp)
+add_executable(markers_get_robot_base_node 
+    nodes/markers_get_robot_base_node.cpp 
+    src/markers_get_robot_base.cpp)
 target_link_libraries(markers_get_robot_base_node robot_task_markers)
 
-add_executable(markers_get_reach_poses_node src/markers_get_reach_poses_node.cpp src/markers_get_reach_poses.cpp)
+add_executable(markers_get_reach_poses_node 
+    nodes/markers_get_reach_poses_node.cpp 
+    src/markers_get_reach_poses.cpp)
 target_link_libraries(markers_get_reach_poses_node robot_task_markers)
+
+add_executable(markers_get_ik_pose_node 
+     nodes/markers_get_ik_pose_node.cpp
+     src/markers_get_ik_pose.cpp)
+target_link_libraries(markers_get_ik_pose_node robot_task_markers)
+
+add_executable(markers_get_mobile_poses_node 
+     nodes/markers_get_mobile_poses_node.cpp
+     src/markers_get_mobile_poses.cpp)
+target_link_libraries(markers_get_mobile_poses_node robot_task_markers)
 
 
 install(
@@ -72,6 +86,8 @@ install(
   robot_task_markers
   markers_get_robot_base_node 
   markers_get_reach_poses_node
+  markers_get_ik_pose_node
+  markers_get_mobile_poses_node
 #  trac_ik_test
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib

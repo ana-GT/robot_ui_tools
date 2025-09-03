@@ -39,8 +39,8 @@ void MarkersGetReachPoses::processFeedback( const visualization_msgs::msg::Inter
   {
   case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
-          RCLCPP_ERROR(this->get_logger(), "Processing feeback from markers_get_reach_poses's menu select. Marker size: %d", marker_names_.size());
-       auto request = std::make_shared<reachability_msgs::srv::GenerateReachPoses::Request>();
+      RCLCPP_ERROR(this->get_logger(), "Processing feeback from markers_get_reach_poses's menu select. Marker size: %ld", marker_names_.size());
+      auto request = std::make_shared<reachability_msgs::srv::GenerateReachPoses::Request>();
 
       // Get feedback poses
       if( marker_names_.size() != 1)
@@ -107,7 +107,7 @@ void MarkersGetReachPoses::client_cb(rclcpp::Client<reachability_msgs::srv::Gene
     publisher_marker_->publish(md);
     usleep(0.1*1e6);
 
-    RCLCPP_INFO(this->get_logger(), "Showing %ld solutions, js: %d", response->ee_poses.size(), response->joint_states.size());
+    RCLCPP_INFO(this->get_logger(), "Showing %ld solutions, js: %ld", response->ee_poses.size(), response->joint_states.size());
     int id = 0;
     visualization_msgs::msg::MarkerArray ma;
     for(auto pi : response->ee_poses)

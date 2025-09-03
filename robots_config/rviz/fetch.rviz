@@ -160,6 +160,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        tcp_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         torso_fixed_link:
           Alpha: 1
           Show Axes: false
@@ -287,9 +291,43 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /floor_points
       Value: true
+    - Alpha: 0.5
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: ReachabilityDisplay
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: ReachabilityDisplay
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.019999999552965164
+      Style: Spheres
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /reach_graph
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 0; 0; 0
+    Background Color: 255; 255; 255
     Fixed Frame: world
     Frame Rate: 30
   Name: root
@@ -333,7 +371,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.1053168773651123
+      Distance: 3.0535662174224854
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -348,10 +386,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4097971022129059
+      Pitch: 0.2797972857952118
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.5903937220573425
+      Yaw: 0.9003934264183044
     Saved: ~
 Window Geometry:
   Displays:
@@ -368,4 +406,4 @@ Window Geometry:
     collapsed: true
   Width: 1200
   X: 720
-  Y: 149
+  Y: 127

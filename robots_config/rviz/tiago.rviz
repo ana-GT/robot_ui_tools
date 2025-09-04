@@ -3,7 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /ReachabilityDisplay1/Reachability1
       Splitter Ratio: 0.5
     Tree Height: 610
   - Class: rviz_common/Selection
@@ -397,7 +398,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: ReachabilityDisplay
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: RGB8
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -408,8 +409,13 @@ Visualization Manager:
       Name: ReachabilityDisplay
       Namespaces:
         {}
-      Plane: XZ+
-      Position Transformer: ""
+      Position Transformer: XYZ
+      Reachability:
+        Plane: FULL
+        offset: 0
+        show_orientation: false
+        single_layer: false
+        top_best: 100
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.009999999776482582
@@ -424,11 +430,9 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-      offset: 0
-      top_best: 100
   Enabled: true
   Global Options:
-    Background Color: 0; 0; 0
+    Background Color: 255; 255; 255
     Fixed Frame: world
     Frame Rate: 30
   Name: root
@@ -487,10 +491,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4697970747947693
+      Pitch: 0.3097972273826599
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.5253600478172302
+      Yaw: 0.7953598499298096
     Saved: ~
 Window Geometry:
   Displays:

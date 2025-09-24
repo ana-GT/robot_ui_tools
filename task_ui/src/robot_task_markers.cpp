@@ -102,8 +102,8 @@ void RobotTaskMarkers::createTaskMarkers()
   reference_frame_ = params_.reference_frame; 
   std::vector<geometry_msgs::msg::Pose> marker_poses(2);
 
-  doubleArrayToPose(params_.object_start_pose, marker_poses[0]);  
-  doubleArrayToPose(params_.object_goal_pose, marker_poses[1]);  
+  doubleArrayToPose(params_.object_pose_0, marker_poses[0]);  
+  doubleArrayToPose(params_.object_pose_1, marker_poses[1]);  
   int ind;
 
   for(int i = 0; i < params_.num_task_poses; ++i)
@@ -231,7 +231,7 @@ void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode
   visualization_msgs::msg::InteractiveMarker int_marker;
   int_marker.header.frame_id = _frame_id;
   int_marker.pose = _pose;  
-  int_marker.scale = 0.4;
+  int_marker.scale = params_.gimbal_scale;
 
   int_marker.name = _marker_name;
   int_marker.description = _marker_name;

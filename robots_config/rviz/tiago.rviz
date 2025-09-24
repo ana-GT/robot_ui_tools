@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /ReachabilityDisplay1
         - /ReachabilityDisplay1/Reachability1
       Splitter Ratio: 0.5
     Tree Height: 610
@@ -411,15 +412,15 @@ Visualization Manager:
         {}
       Position Transformer: XYZ
       Reachability:
-        Plane: FULL
-        offset: 0
+        Plane: XY-
+        offset: -0.699999988079071
         show_orientation: false
-        single_layer: false
+        single_layer: true
         top_best: 100
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
+      Size (m): 0.05000000074505806
+      Style: Spheres
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -491,10 +492,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3097972273826599
+      Pitch: 0.6047971248626709
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.7953598499298096
+      Yaw: 4.708543300628662
     Saved: ~
 Window Geometry:
   Displays:

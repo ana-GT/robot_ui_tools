@@ -39,6 +39,9 @@ ament_target_dependencies(simple_placement_solver ${DEPS})
 add_executable(simple_reachability_query src/simple_reachability_query.cpp)
 ament_target_dependencies(simple_reachability_query ${DEPS})
 
+add_executable(simple_grasp_object_poses_solver src/simple_grasp_object_poses_solver.cpp)
+ament_target_dependencies(simple_grasp_object_poses_solver ${DEPS})
+
 
 install(
   DIRECTORY include/
@@ -49,6 +52,7 @@ install(TARGETS
   simulate_robot_base_motion
   simple_placement_solver
   simple_reachability_query
+  simple_grasp_object_poses_solver
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

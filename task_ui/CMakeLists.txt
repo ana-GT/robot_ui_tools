@@ -67,6 +67,17 @@ add_executable(markers_get_mobile_poses_node
      src/markers_get_mobile_poses.cpp)
 target_link_libraries(markers_get_mobile_poses_node robot_task_markers)
 
+add_executable(markers_get_grasp_object_poses_node 
+     nodes/markers_get_grasp_object_poses_node.cpp
+     src/markers_get_grasp_object_poses.cpp)
+target_link_libraries(markers_get_grasp_object_poses_node robot_task_markers)
+
+
+#add_executable(markers_get_reach_data_node 
+#     nodes/markers_get_reach_data_node.cpp
+#     src/markers_get_reach_data.cpp)
+#target_link_libraries(markers_get_reach_data_node robot_task_markers)
+
 
 install(
   DIRECTORY include/
@@ -88,6 +99,8 @@ install(
   markers_get_reach_poses_node
   markers_get_ik_pose_node
   markers_get_mobile_poses_node
+  markers_get_grasp_object_poses_node
+#  markers_get_reach_data_node  
 #  trac_ik_test
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib

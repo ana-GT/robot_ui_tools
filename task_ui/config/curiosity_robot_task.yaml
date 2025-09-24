@@ -5,5 +5,5 @@ arm:
 
   num_robot_placements: 10 
 
-  object_start_pose:  [1.5, 0.5, 0.8, 1.5708, 0.0, 0.0]
-  object_goal_pose:  [1.5, 0.4, 0.8, 1.5708, 0.0, 0.0]  
+  object_pose_0:  [1.5, 0.5, 0.8, 1.5708, 0.0, 0.0]
+  object_pose_1:  [1.5, 0.4, 0.8, 1.5708, 0.0, 0.0]  

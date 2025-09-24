@@ -67,7 +67,8 @@ def generate_launch_description():
              name='rviz2',
              arguments=['--display-config', rviz_file],
              condition=IfCondition(LaunchConfiguration("rviz")),
-             output="screen"
+             output="screen",
+             #prefix=["xterm -e gdb -ex run --args"]
     )
 
 

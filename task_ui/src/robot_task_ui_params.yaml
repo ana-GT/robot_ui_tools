@@ -10,6 +10,11 @@ robot_task_ui_params:
     default_value: "world"
   }
 
+  gimbal_scale: {
+    type: double,
+    default_value: 0.2
+  }
+
   num_task_poses: {
     type: int,
     default_value: 1
@@ -20,7 +25,7 @@ robot_task_ui_params:
     default_value: 3
   }
 
-  object_start_pose: {
+  object_pose_0: {
     type: double_array,
     validation: {
       fixed_size<>: [6]    
@@ -28,10 +33,26 @@ robot_task_ui_params:
     default_value: [1.5, 0.5, 0.8, 0.0, 0.0, 0.0]
   }
 
-  object_goal_pose: {
+  object_pose_1: {
     type: double_array,
     validation: {
       fixed_size<>: [6]    
     },
     default_value: [1.5, 0.6, 0.8, 0.0, 0.0, 0.0]
   }  
+  
+  grasp_offset_0: {
+    type: double_array,
+    validation: {
+      fixed_size<>: [6]    
+    },
+    default_value: [0.0, -0.08, 0.10, 1.5708, 0.0, 0.0]  
+  }
+  grasp_offset_1: {
+    type: double_array,
+    validation: {
+      fixed_size<>: [6]    
+    },
+    default_value: [0.0, -0.08, 0.10, 1.5708, 0.0, 0.0]  
+  }  
+  

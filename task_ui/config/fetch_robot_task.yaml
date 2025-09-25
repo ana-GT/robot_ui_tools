@@ -6,4 +6,6 @@ arm_with_torso:
   num_robot_placements: 10 
 
   object_pose_0:  [1.5, 0.5, 0.8, 1.5708, 0.0, 0.0]
-  object_pose_1:  [1.5, 0.4, 0.8, 1.5708, 0.0, 0.0]  
+  object_pose_1:  [1.5, 0.4, 0.8, 1.5708, 0.0, 0.0]
+  
+  grasp_offset_0:  [0.0, -0.08, 0.10, -1.5708, 0.0, 0.0]  

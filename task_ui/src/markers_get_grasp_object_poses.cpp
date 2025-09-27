@@ -32,7 +32,7 @@ bool MarkersGetGraspObjectPoses::init_(const std::string &_chain_group)
 
 
 // %Tag(processFeedback)%
-void MarkersGetGraspObjectPoses::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void MarkersGetGraspObjectPoses::processFeedback_( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
 
   switch ( feedback->event_type )

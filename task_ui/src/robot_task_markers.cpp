@@ -3,7 +3,8 @@
  */
 
 #include <task_ui/robot_task_markers.h>
-
+#include <Eigen/Geometry>
+#include <tf2_eigen/tf2_eigen.hpp> 
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -77,10 +78,10 @@ void RobotTaskMarkers::switchGimbal( const visualization_msgs::msg::InteractiveM
   switch ( feedback->event_type )
   {
      case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
-      if(isGimbalShowing())
-        hideGimbal();
+      if(isGimbalShowing(feedback->marker_name))
+        hideGimbal(feedback->marker_name);
       else
-        showGimbal();  
+        showGimbal(feedback->marker_name);  
      break;
   }
 }
@@ -112,22 +113,18 @@ void RobotTaskMarkers::createTaskMarkers()
 		    true, reference_frame_, ri.name);
   } // for ri
 
-
-RCLCPP_INFO(this->get_logger(), "Refs: %lu, objects: %lu, steps: %lu", references_.size(), objects_.size(), steps_.size());
-
   // Create step markers
   geometry_msgs::msg::Pose step_pose;
   for(auto si : steps_)
   {
     marker_names_.push_back(si.name);
-   RCLCPP_INFO(this->get_logger(), "Processing step...");
-    if (!doubleArrayToPose(params_.step_data.step_names_map.at(si.name).pose, step_pose))
-      continue;  
     
-    int index = getObjectIndex(si.object);   RCLCPP_INFO(this->get_logger(), "Getting object index: %d", index);
+    int index = getObjectIndex(si.object);
     if(index < 0)
       continue;
-         RCLCPP_INFO(this->get_logger(), "Processing step, mesh: %s", objects_[index].mesh.c_str());
+
+    auto step_pose = calculateStepPose(si);
+   
     make6DofMarker( false, visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE_3D,
 		    step_pose, objects_[index].mesh, 
 		    true, reference_frame_, si.name);    
@@ -136,14 +133,77 @@ RCLCPP_INFO(this->get_logger(), "Refs: %lu, objects: %lu, steps: %lu", reference
 }
 
 /**
+ * @function calculateStepPose
+ */
+geometry_msgs::msg::Pose RobotTaskMarkers::calculateStepPose(const Step &_step)
+{
+ Eigen::Isometry3d Tf_ref, Tf_step, Tf_full;
+ 
+ // Get reference pose
+ auto ref_pose = getMarkerPose(_step.reference);
+ tf2::fromMsg( getMarkerPose(_step.reference), Tf_ref );
+ 
+ // Get relative pose
+ tf2::fromMsg(_step.pose, Tf_step);
+  
+ // multiply and return
+ Tf_full = Tf_ref * Tf_step;
+ 
+ geometry_msgs::msg::Pose pose = tf2::toMsg(Tf_full); 
+ return pose;
+}
+
+/**
+ * @function getMarkerPose
+ */
+geometry_msgs::msg::Pose RobotTaskMarkers::getMarkerPose(const std::string &_name)
+{
+  visualization_msgs::msg::InteractiveMarker im;  
+  if(!server_->get(_name, im))
+    RCLCPP_ERROR(this->get_logger(), "Marker with name %s does NOT exist", _name.c_str());
+  
+  return  im.pose;
+}
+
+/**
  * @function getObjectIndex
  */
 int RobotTaskMarkers::getObjectIndex(const std::string &_name)
-{   RCLCPP_INFO(this->get_logger(), "Getting object index for: %s", _name.c_str());
+{
    int index = -1;
    for(int i = 0; i < objects_.size(); ++i)
-   {   RCLCPP_INFO(this->get_logger(), "Object evaluated, type: %s", objects_[i].name.c_str());
+   {
       if(objects_[i].name == _name)
+        return i;
+   }
+   
+   return index;
+}
+
+/**
+ * @function getReferenceIndex
+ */
+int RobotTaskMarkers::getReferenceIndex(const std::string &_name)
+{
+   int index = -1;
+   for(int i = 0; i < references_.size(); ++i)
+   {
+      if(references_[i].name == _name)
+        return i;
+   }
+   
+   return index;
+}
+
+/**
+ * @function getStepIndex
+ */
+int RobotTaskMarkers::getStepIndex(const std::string &_name)
+{
+   int index = -1;
+   for(int i = 0; i < steps_.size(); ++i)
+   {
+      if(steps_[i].name == _name)
         return i;
    }
    
@@ -199,10 +259,12 @@ void RobotTaskMarkers::parseParams()
     step.name = si;
     step.object = params_.step_data.step_names_map.at(si).object;
     step.reference = params_.step_data.step_names_map.at(si).reference;
-   
+    
+    if (!doubleArrayToPose(params_.step_data.step_names_map.at(si).pose, step.pose))
+      continue;  
+          
     steps_.push_back(step);
    } // for si
-   
    
 }
 
@@ -344,13 +406,13 @@ void RobotTaskMarkers::make6DofMarker( bool fixed, unsigned int interaction_mode
     menu_handler_.apply( *server_, int_marker.name );
 }
 
-bool RobotTaskMarkers::isGimbalShowing()
+bool RobotTaskMarkers::isGimbalShowing(const std::string &_name)
 {
+
   for(int i = 0; i < steps_.size(); ++i)
   {
     visualization_msgs::msg::InteractiveMarker im;
-    std::string name_i = steps_[i].name;
-    server_->get(name_i, im);
+    server_->get(_name, im);
     
     if( im.controls.size() > 6 )
       return true;
@@ -359,34 +421,26 @@ bool RobotTaskMarkers::isGimbalShowing()
   return false;
 }
 
-void RobotTaskMarkers::hideGimbal()
+void RobotTaskMarkers::hideGimbal(const std::string &_name)
 {
-  for(int i = 0; i < steps_.size(); ++i)
-  {
     visualization_msgs::msg::InteractiveMarker im;
-    std::string name_i = steps_[i].name;
-    server_->get(name_i, im);
+    server_->get(_name, im);
     int num = im.controls.size();
     for(int j = 1; j < num; ++j)
       im.controls.pop_back();
     
     server_->insert(im);
     server_->applyChanges();
-  }  
 }
 
-void RobotTaskMarkers::showGimbal()
+void RobotTaskMarkers::showGimbal(const std::string &_name)
 {
-  for(int i = 0; i < steps_.size(); ++i)
-  {
     visualization_msgs::msg::InteractiveMarker im;
-    std::string name_i = steps_[i].name;
-    server_->get(name_i, im);
+    server_->get(_name, im);
     
     addGimbal(im);    
     server_->insert(im);
     server_->applyChanges();
-  }  
 
 }
 
@@ -519,6 +573,72 @@ void RobotTaskMarkers::makeMovingMarker( const tf2::Vector3& position,
 
   server_->insert(int_marker);
   server_->setCallback(int_marker.name, std::bind(&RobotTaskMarkers::processFeedback, this, _1));
+}
+
+
+/**
+ * @function processFeedback
+ */
+void RobotTaskMarkers::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+{
+
+  switch ( feedback->event_type )
+  {
+    case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
+    {
+      // If it is reference object, update pose of step related to it
+      auto marker = feedback->marker_name;
+      geometry_msgs::msg::Pose pose_step;
+       
+      Eigen::Isometry3d Tf_marker, Tf_rel, Tf_step; 
+      tf2::fromMsg( getMarkerPose(marker), Tf_marker );      
+
+      int ref_index = getReferenceIndex(marker);
+      if(ref_index >= 0)
+      {
+	for(int i = 0; i < steps_.size(); ++i)
+	{
+	 if(steps_[i].reference == marker)
+	 {
+	   tf2::fromMsg(steps_[i].pose, Tf_rel);
+	   Tf_step = Tf_marker * Tf_rel;
+	   pose_step = tf2::toMsg(Tf_step);
+	   // update pose
+	   server_->setPose(steps_[i].name, pose_step);
+	 } // if steps
+	} // for i
+      
+        break;
+      }
+      // If it is step object, update stored pose
+      int step_index = getStepIndex(marker);
+      
+      geometry_msgs::msg::Pose pose_ref;
+      Eigen::Isometry3d Tf_ref;
+      
+      if(step_index >= 0)
+      {
+        // Get pose of step
+        pose_step = getMarkerPose(steps_[step_index].name);
+        tf2::fromMsg(pose_step, Tf_step);
+        
+        // Get pose of reference
+        pose_ref = getMarkerPose(steps_[step_index].reference);
+        tf2::fromMsg(pose_ref, Tf_ref);
+                
+        // Get Tf_step = Tf_ref * Tf_rel = Tf_ref.inverse() * Tf_step
+        Tf_rel = Tf_ref.inverse() * Tf_step;
+        steps_[step_index].pose = tf2::toMsg(Tf_rel);
+	   	
+        break;
+      }      
+
+    }
+    break;
+  }
+
+ // Specific application
+ processFeedback_(feedback);
 }
 
   

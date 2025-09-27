@@ -29,8 +29,8 @@ bool MarkersGetRobotBase::init_(const std::string &_chain_group)
 }
 
 
-// %Tag(processFeedback)%
-void MarkersGetRobotBase::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+
+void MarkersGetRobotBase::processFeedback_( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
   std::ostringstream s;
   s << "* Feedback from marker '" << feedback->marker_name;

@@ -32,7 +32,7 @@ bool MarkersGetReachPoses::init_(const std::string &_chain_group)
 
 
 // %Tag(processFeedback)%
-void MarkersGetReachPoses::processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
+void MarkersGetReachPoses::processFeedback_( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback )
 {
 
   switch ( feedback->event_type )

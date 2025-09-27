@@ -10,7 +10,7 @@ arm_with_torso:
   reference_data:
     human: 
       mesh: "package://task_ui/meshes/person_standing_1_75_height_reference.dae"
-      pose: [1.5, 0.5, 0.8, 0, 0.0, 0.0]
+      pose: [1.5, 0.5, 1.1, 0, 0.0, 0.0]
 
 ###################################################
   object_names:
@@ -29,7 +29,7 @@ arm_with_torso:
   step_data:    
     step_0:
       object: mug
-      pose: [2.0, 0.5, 0.8, 0, 0.0, 0.0]
+      pose: [0.3, 0.0, 0.0, 0, 0.0, 0.0]
       reference: human  
 
 

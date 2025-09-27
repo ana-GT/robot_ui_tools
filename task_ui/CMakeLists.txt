@@ -12,6 +12,7 @@ set(DEPS
   tf2
   tf2_geometry_msgs
   reachability_msgs
+  tf2_eigen
   robot_sim_msgs
   generate_parameter_library
   )

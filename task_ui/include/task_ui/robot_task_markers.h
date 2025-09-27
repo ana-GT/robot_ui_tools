@@ -40,6 +40,7 @@ struct Step {
   std::string name;
   std::string object;
   std::string reference;
+  geometry_msgs::msg::Pose pose;
 };
 
 /**
@@ -59,8 +60,9 @@ protected:
                                                   const std::string &_mesh );
   visualization_msgs::msg::InteractiveMarkerControl& makeMeshControl( visualization_msgs::msg::InteractiveMarker &msg,
                                                                       const std::string &_mesh );
- 
-  virtual void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback ) = 0;
+
+  void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback ); 
+  virtual void processFeedback_( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback ) = 0;
   void switchGimbal( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
 
   void alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
@@ -78,9 +80,12 @@ protected:
   void makeMovingMarker( const tf2::Vector3& position,
 			 std::string frame_id); // moving_frame
   
-  bool isGimbalShowing();
-  void showGimbal();
-  void hideGimbal();
+  geometry_msgs::msg::Pose calculateStepPose(const Step &_step);
+  geometry_msgs::msg::Pose getMarkerPose(const std::string &_name);
+  
+  bool isGimbalShowing(const std::string &_name);
+  void showGimbal(const std::string &_name);
+  void hideGimbal(const std::string &_name);
   void addGimbal( visualization_msgs::msg::InteractiveMarker &_im );
   
   double rand( double min, double max );
@@ -93,7 +98,9 @@ protected:
 
   // Helpers
   int getObjectIndex(const std::string &_name);  
-
+  int getReferenceIndex(const std::string &_name);
+  int getStepIndex(const std::string &_name);
+  
   // To simulate motion
   void moveBase(const geometry_msgs::msg::PoseStamped &_pose);  
 

@@ -39,12 +39,12 @@ void MarkersGetMobilePoses::processFeedback( const visualization_msgs::msg::Inte
   {
   case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
-       RCLCPP_ERROR(this->get_logger(), "Processing feeback from markers_get_reach_poses's menu select. Marker size: %ld", marker_names_.size());
        auto request = std::make_shared<reachability_msgs::srv::GetMobilePoses::Request>();
 
       // Get feedback poses
       if( marker_names_.size() != 1)
       {
+         RCLCPP_ERROR(this->get_logger(), "Marker size should be 1, it is: %ld", marker_names_.size());
          return;
       }
 
@@ -57,7 +57,12 @@ void MarkersGetMobilePoses::processFeedback( const visualization_msgs::msg::Inte
       //request->init_joint_state; // empty: Will use the current joint state
       request->goal_pose.pose = im.pose;
       request->goal_pose.header = im.header;
-      doubleArrayToPose(params_.grasp_offset_0, request->grasp_offset);
+      
+      int index = getObjectIndex(steps_[0].object);
+      if(index < 0)
+        return;
+
+      request->grasp_offset = objects_[index].grasp_offset;
 
       while (!client_->wait_for_service(1s)) {
       
@@ -67,8 +72,7 @@ void MarkersGetMobilePoses::processFeedback( const visualization_msgs::msg::Inte
         }
         RCLCPP_WARN(this->get_logger(), "service not available, waiting again...");
       }
-    
-      RCLCPP_INFO(this->get_logger(), "Sending request for manipulation task plan");
+
       auto result = client_->async_send_request(request, 
                        std::bind(&MarkersGetMobilePoses::client_cb, this, std::placeholders::_1));
      // Do not wait for result or crash. No nested wait spinning

@@ -1,13 +1,35 @@
 arm_with_torso:
-  object_mesh: "package://task_ui/meshes/cup_1.dae"
-  num_task_poses: 1
+
   reference_frame: "world"
   gimbal_scale: 0.2
-
   num_robot_placements: 10 
 
-  object_pose_0:  [1.5, 0.5, 0.8, 0, 0.0, 0.0]
-  object_pose_1:  [1.5, 0.4, 0.8, 0, 0.0, 0.0]
+  reference_names: 
+    - human
   
-  grasp_offset_0:  [0.0, -0.08, 0.10, -1.5708, 0.0, 0.0]
+  reference_data:
+    human: 
+      mesh: "package://task_ui/meshes/person_standing_1_75_height_reference.dae"
+      pose: [1.5, 0.5, 0.8, 0, 0.0, 0.0]
+
+###################################################
+  object_names:
+    - mug
+    
+  object_data:
+    mug:
+      mesh: "package://task_ui/meshes/cup_1.dae"
+      grasp_offset: [0.0, -0.08, 0.10, -1.5708, 0.0, 0.0]    
+
+####################################################
+
+  step_names:
+    - step_0
   
+  step_data:    
+    step_0:
+      object: mug
+      pose: [2.0, 0.5, 0.8, 0, 0.0, 0.0]
+      reference: human  
+
+

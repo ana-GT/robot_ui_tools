@@ -56,7 +56,12 @@ void MarkersGetGraspObjectPoses::processFeedback( const visualization_msgs::msg:
       //request->group_name = group_;
       //request->init_joint_state; // empty: Will use the current joint state
       request->object_pose = im.pose;
-      doubleArrayToPose(params_.grasp_offset_0, request->grasp_offset);
+      
+      int index = getObjectIndex(steps_[0].object);
+      if(index < 0)
+        return;
+
+      request->grasp_offset = objects_[index].grasp_offset;     
       request->frame_id = im.header.frame_id;
       
       while (!client_->wait_for_service(1s)) {

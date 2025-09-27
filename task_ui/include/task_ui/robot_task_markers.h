@@ -24,6 +24,24 @@
 // Parameters
 #include <task_ui/robot_task_ui_params.hpp>
 
+
+struct Reference {
+  std::string name;
+  std::string mesh;
+};
+
+struct Object {
+  std::string name;
+  std::string mesh;
+  geometry_msgs::msg::Pose grasp_offset;
+};
+
+struct Step {
+  std::string name;
+  std::string object;
+  std::string reference;
+};
+
 /**
  * @class RobotTaskMarkers
  */
@@ -37,18 +55,21 @@ public:
   
 protected:
   visualization_msgs::msg::Marker makeBox( visualization_msgs::msg::InteractiveMarker &msg );
-  visualization_msgs::msg::Marker makeMeshMarker( visualization_msgs::msg::InteractiveMarker &msg );
-  visualization_msgs::msg::InteractiveMarkerControl& makeMeshControl( visualization_msgs::msg::InteractiveMarker &msg );
+  visualization_msgs::msg::Marker makeMeshMarker( visualization_msgs::msg::InteractiveMarker &msg, 
+                                                  const std::string &_mesh );
+  visualization_msgs::msg::InteractiveMarkerControl& makeMeshControl( visualization_msgs::msg::InteractiveMarker &msg,
+                                                                      const std::string &_mesh );
  
   virtual void processFeedback( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback ) = 0;
   void switchGimbal( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
 
   void alignMarker( const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback );
   void make6DofMarker( bool fixed, unsigned int interaction_mode,
-		       const geometry_msgs::msg::Pose& _pose, 
-                      bool show_6dof,
+		       const geometry_msgs::msg::Pose& _pose,
+		       const std::string &_mesh,
+                       bool show_6dof,
 		       std::string frame_id,
-                      std::string _marker_name); // base_link
+                       std::string _marker_name); // base_link
 
   void makeMenuMarker( const tf2::Vector3& position,
 		       std::string frame_id);
@@ -67,7 +88,11 @@ protected:
 
   bool doubleArrayToPose(const std::vector<double> &_arr, 
                          geometry_msgs::msg::Pose &_pose);
-                                      
+           
+  void parseParams();                                      
+
+  // Helpers
+  int getObjectIndex(const std::string &_name);  
 
   // To simulate motion
   void moveBase(const geometry_msgs::msg::PoseStamped &_pose);  
@@ -81,10 +106,18 @@ protected:
   
   // Params
   robot_task_ui_params::Params params_;
+  
+  // Params data
   std::vector<std::string> marker_names_;
+  
+  std::vector<Reference> references_;
+  std::vector<Object> objects_;
+  std::vector<Step> steps_;
+  
   std::string reference_frame_;
 
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_js_;
   rclcpp::Client<robot_sim_msgs::srv::SetRobotPose>::SharedPtr client_move_base_;
 };
+
 
